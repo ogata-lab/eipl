@@ -1,6 +1,6 @@
 
 <div align="center">
-<img src="https://raw.githubusercontent.com/ogata-lab/eipl-docs/master/top/resources/logo.svg" width="50%">
+<img src="https://raw.githubusercontent.com/ogata-lab/eipl-docs/master/top/resources/logo.svg" width="100%">
 </div>
 
 
@@ -11,8 +11,8 @@ EIPL (Embodied Intelligence with Deep Predictive Learning) is a library for robo
 Highlighted features include:
 
 - [**Full documentation**](https://ogata-lab.github.io/eipl-docs) for the systematic understanding of deep predictive learning
-- **Easy model training:** Including sample data sets, source code, and pre-trained weights
-- **Applicable to real robots:** Generalized motion can be acquired with small data
+- **Easy model training:** Includes sample datasets, source code, and pre-trained weights
+- **Applicable to real robots:** Generalized motion can be acquired with small data sets
 
 ## Install
 
