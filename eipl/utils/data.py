@@ -5,6 +5,7 @@
 # see https://www.gnu.org/licenses/agpl-3.0.txt
 #
 
+import cv2
 import numpy as np
 from PIL import Image, ImageDraw
 import matplotlib.cm as cm
