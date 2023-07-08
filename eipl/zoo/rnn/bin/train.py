@@ -30,7 +30,7 @@ except:
 # argument parser
 parser = argparse.ArgumentParser(description="Learning convolutional autoencoder")
 parser.add_argument("--model", type=str, default="LSTM")
-parser.add_argument("--epoch", type=int, default=100000)
+parser.add_argument("--epoch", type=int, default=20000)
 parser.add_argument("--batch_size", type=int, default=5)
 parser.add_argument("--rec_dim", type=int, default=50)
 parser.add_argument("--stdev", type=float, default=0.02)
@@ -95,7 +95,7 @@ trainer = fullBPTTtrainer(model, optimizer, device=device)
 log_dir_path = set_logdir("./" + args.log_dir, args.tag)
 save_name = os.path.join(log_dir_path, "{}.pth".format(args.model))
 writer = SummaryWriter(log_dir=log_dir_path, flush_secs=30)
-early_stop = EarlyStopping(patience=100000)
+early_stop = EarlyStopping(patience=1000)
 
 with tqdm(range(args.epoch)) as pbar_epoch:
     for epoch in pbar_epoch:

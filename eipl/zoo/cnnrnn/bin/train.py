@@ -27,7 +27,7 @@ except:
 # argument parser
 parser = argparse.ArgumentParser(description="Learning convolutional and recurrent neural network")
 parser.add_argument("--model", type=str, default="CNNRNN")
-parser.add_argument("--epoch", type=int, default=100000)
+parser.add_argument("--epoch", type=int, default=10000)
 parser.add_argument("--batch_size", type=int, default=5)
 parser.add_argument("--rec_dim", type=int, default=50)
 parser.add_argument("--feat_dim", type=int, default=10)
@@ -91,7 +91,7 @@ trainer = fullBPTTtrainer(model, optimizer, loss_weights=loss_weights, device=de
 log_dir_path = set_logdir("./" + args.log_dir, args.tag)
 save_name = os.path.join(log_dir_path, "{}.pth".format(args.model))
 writer = SummaryWriter(log_dir=log_dir_path, flush_secs=30)
-early_stop = EarlyStopping(patience=100000)
+early_stop = EarlyStopping(patience=1000)
 
 with tqdm(range(args.epoch)) as pbar_epoch:
     for epoch in pbar_epoch:

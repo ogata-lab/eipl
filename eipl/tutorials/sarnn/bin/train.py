@@ -29,7 +29,7 @@ parser = argparse.ArgumentParser(
     description="Learning spatial autoencoder with recurrent neural network"
 )
 parser.add_argument("--model", type=str, default="sarnn")
-parser.add_argument("--epoch", type=int, default=100000)
+parser.add_argument("--epoch", type=int, default=2000)
 parser.add_argument("--batch_size", type=int, default=5)
 parser.add_argument("--rec_dim", type=int, default=50)
 parser.add_argument("--k_dim", type=int, default=5)
@@ -98,7 +98,7 @@ trainer = fullBPTTtrainer(model, optimizer, loss_weights=loss_weights, device=de
 log_dir_path = set_logdir("./" + args.log_dir, args.tag)
 save_name = os.path.join(log_dir_path, "SARNN.pth")
 writer = SummaryWriter(log_dir=log_dir_path, flush_secs=30)
-early_stop = EarlyStopping(patience=100000)
+early_stop = EarlyStopping(patience=1000)
 
 with tqdm(range(args.epoch)) as pbar_epoch:
     for epoch in pbar_epoch:

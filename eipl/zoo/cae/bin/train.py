@@ -96,7 +96,7 @@ trainer = Trainer(model, optimizer, device=device)
 log_dir_path = set_logdir("./" + args.log_dir, args.tag)
 save_name = os.path.join(log_dir_path, "{}.pth".format(args.model))
 writer = SummaryWriter(log_dir=log_dir_path, flush_secs=30)
-early_stop = EarlyStopping(patience=100000)
+early_stop = EarlyStopping(patience=1000)
 
 with tqdm(range(args.epoch)) as pbar_epoch:
     for epoch in pbar_epoch:
