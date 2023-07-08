@@ -47,6 +47,9 @@ args = parser.parse_args()
 # check args
 args = check_args(args)
 
+# calculate the noise level (variance) from the normalized range
+stdev = args.stdev * (args.vmax - args.vmin)
+
 # set device id
 if args.device >= 0:
     device = "cuda:{}".format(args.device)
@@ -57,13 +60,13 @@ else:
 minmax = [args.vmin, args.vmax]
 grasp_data = SampleDownloader("airec", "grasp_bottle", img_format="CHW")
 images, _ = grasp_data.load_norm_data("train", vmin=args.vmin, vmax=args.vmax)
-train_dataset = ImageDataset(images)
+train_dataset = ImageDataset(images, stdev=stdev, training=True)
 train_loader = torch.utils.data.DataLoader(
     train_dataset, batch_size=args.batch_size, shuffle=True, drop_last=False, pin_memory=True
 )
 
 images, _ = grasp_data.load_norm_data("test", vmin=args.vmin, vmax=args.vmax)
-test_dataset = ImageDataset(images)
+test_dataset = ImageDataset(images, stdev=0.0, training=False)
 test_loader = torch.utils.data.DataLoader(
     test_dataset, batch_size=args.batch_size, shuffle=True, drop_last=False, pin_memory=True
 )

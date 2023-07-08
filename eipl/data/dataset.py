@@ -20,7 +20,7 @@ class ImageDataset(Dataset):
         stdev (float, optional): Set the standard deviation for normal distribution to generate noise.
     """
 
-    def __init__(self, data, stdev=0.02):
+    def __init__(self, data, stdev=0.0, training=True):
         """
         Reshapes and transforms the data.
 
@@ -30,6 +30,7 @@ class ImageDataset(Dataset):
         """
 
         self.stdev = stdev
+        self.training = training
         _image_flatten = data.reshape(((-1,) + data.shape[-3:]))
         self.image_flatten = torch.from_numpy(_image_flatten).float()
 
@@ -68,8 +69,16 @@ class ImageDataset(Dataset):
             image_list (list): A list containing the transformed and noise added image (x_img) and the affine transformed image (y_img).
         """
         img = self.image_flatten[idx]
-        y_img = self.transform_affine(img)
-        x_img = self.transform_noise(y_img) + torch.normal(mean=0, std=self.stdev, size=y_img.shape)
+
+        if self.training:
+            y_img = self.transform_affine(img)
+            x_img = self.transform_noise(y_img) + torch.normal(
+                mean=0, std=self.stdev, size=y_img.shape
+            )
+        else:
+            y_img = img
+            x_img = img
+
         return [x_img, y_img]
 
 
@@ -83,7 +92,7 @@ class MultimodalDataset(Dataset):
         stdev (float, optional): Set the standard deviation for normal distribution to generate noise.
     """
 
-    def __init__(self, images, joints, stdev=0.02):
+    def __init__(self, images, joints, stdev=0.0, training=True):
         """
         The constructor of Multimodal Dataset class. Initializes the images, joints, and transformation.
 
@@ -93,6 +102,7 @@ class MultimodalDataset(Dataset):
             stdev (float, optional): The standard deviation for the normal distribution to generate noise. Defaults to 0.02.
         """
         self.stdev = stdev
+        self.training = training
         self.images = torch.from_numpy(images).float()
         self.joints = torch.from_numpy(joints).float()
         self.transform = transforms.ColorJitter(contrast=0.5, brightness=0.5, saturation=0.1)
@@ -116,9 +126,12 @@ class MultimodalDataset(Dataset):
         y_img = self.images[idx]
         y_joint = self.joints[idx]
 
-        x_img = self.transform(self.images[idx])
-        x_img = x_img + torch.normal(mean=0, std=self.stdev, size=x_img.shape)
-
-        x_joint = self.joints[idx] + torch.normal(mean=0, std=self.stdev, size=y_joint.shape)
+        if self.training:
+            x_img = self.transform(self.images[idx])
+            x_img = x_img + torch.normal(mean=0, std=self.stdev, size=x_img.shape)
+            x_joint = self.joints[idx] + torch.normal(mean=0, std=self.stdev, size=y_joint.shape)
+        else:
+            x_img = self.images[idx]
+            x_joint = self.joints[idx]
 
         return [[x_img, x_joint], [y_img, y_joint]]

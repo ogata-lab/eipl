@@ -46,6 +46,9 @@ args = parser.parse_args()
 # check args
 args = check_args(args)
 
+# calculate the noise level (variance) from the normalized range
+stdev = args.stdev * (args.vmax - args.vmin)
+
 # set device id
 if args.device >= 0:
     device = "cuda:{}".format(args.device)
@@ -59,7 +62,9 @@ _feats = np.load("../cae/data/train/features.npy")
 train_feats = normalization(_feats, feat_bounds, minmax)
 train_joints = np.load("../cae/data/train/joints.npy")
 in_dim = train_feats.shape[-1] + train_joints.shape[-1]
-train_dataset = TimeSeriesDataSet(train_feats, train_joints, minmax=[args.vmin, args.vmax])
+train_dataset = TimeSeriesDataSet(
+    train_feats, train_joints, minmax=[args.vmin, args.vmax], stdev=stdev, training=True
+)
 train_loader = torch.utils.data.DataLoader(
     train_dataset, batch_size=args.batch_size, shuffle=True, drop_last=False, pin_memory=True
 )
@@ -67,7 +72,9 @@ train_loader = torch.utils.data.DataLoader(
 _feats = np.load("../cae/data/test/features.npy")
 test_feats = normalization(_feats, feat_bounds, minmax)
 test_joints = np.load("../cae/data/test/joints.npy")
-test_dataset = TimeSeriesDataSet(test_feats, test_joints, minmax=[args.vmin, args.vmax])
+test_dataset = TimeSeriesDataSet(
+    test_feats, test_joints, minmax=[args.vmin, args.vmax], stdev=0.0, training=False
+)
 test_loader = torch.utils.data.DataLoader(
     test_dataset, batch_size=args.batch_size, shuffle=True, drop_last=False, pin_memory=True
 )
