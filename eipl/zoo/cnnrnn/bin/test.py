@@ -34,7 +34,7 @@ assert args.filename or args.pretrained, "Please set filename or pretrained"
 if args.pretrained:
     WeightDownloader("airec", "grasp_bottle")
     args.filename = os.path.join(
-        os.path.expanduser("~"), ".eipl/airec/pretrained/CNNRNN/model.pth"
+        os.path.expanduser("~"), ".eipl/airec/grasp_bottle/weights/CNNRNN/model.pth"
     )
 
 # restore parameters
@@ -43,24 +43,31 @@ params = restore_args(os.path.join(dir_name, "args.json"))
 idx = int(args.idx)
 
 # load dataset
-minmax = [ params['vmin'], params['vmax'] ]
+minmax = [params["vmin"], params["vmax"]]
 grasp_data = SampleDownloader("airec", "grasp_bottle", img_format="HWC")
 _images, _joints = grasp_data.load_raw_data("test")
 images = _images[idx]
 joints = _joints[idx]
-joint_bounds = np.load(
-    os.path.join(os.path.expanduser("~"), ".eipl/airec/grasp_bottle/joint_bounds.npy")
+joint_bounds = grasp_data.joint_bounds
+print(
+    "images shape:{}, min={}, max={}".format(images.shape, images.min(), images.max())
 )
-print("images shape:{}, min={}, max={}".format(images.shape, images.min(), images.max()))
-print("joints shape:{}, min={}, max={}".format(joints.shape, joints.min(), joints.max()))
+print(
+    "joints shape:{}, min={}, max={}".format(joints.shape, joints.min(), joints.max())
+)
 
 # define model
 if params["model"] == "CNNRNN":
     model = CNNRNN(rec_dim=params["rec_dim"], joint_dim=8, feat_dim=params["feat_dim"])
 elif params["model"] == "CNNRNNLN":
-    model = CNNRNNLN(rec_dim=params["rec_dim"], joint_dim=8, feat_dim=params["feat_dim"])
+    model = CNNRNNLN(
+        rec_dim=params["rec_dim"], joint_dim=8, feat_dim=params["feat_dim"]
+    )
 else:
     assert False, "Unknown model name {}".format(params["model"])
+
+if params["compile"]:
+    model = torch.compile(model)
 
 # load weight
 ckpt = torch.load(args.filename, map_location=torch.device("cpu"))
@@ -123,6 +130,7 @@ pred_joint = np.array(joint_list)
 T = len(images)
 fig, ax = plt.subplots(1, 3, figsize=(12, 5), dpi=60)
 
+
 def anim_update(i):
     for j in range(3):
         ax[j].cla()
@@ -148,8 +156,12 @@ def anim_update(i):
 
 
 ani = anim.FuncAnimation(fig, anim_update, interval=int(np.ceil(T / 10)), frames=T)
-ani.save("./output/{}_{}_{}_{}.gif".format(params["model"], params["tag"], idx, args.input_param))
+ani.save(
+    "./output/{}_{}_{}_{}.gif".format(
+        params["model"], params["tag"], idx, args.input_param
+    )
+)
 
-# If an error occurs in generating the gif animation, change the writer (imagemagick/ffmpeg).
-#ani.save("./output/{}_{}_{}_{}.gif".format(params["model"], params["tag"], idx, args.input_param), writer="imagemagick")
-#ani.save("./output/{}_{}_{}_{}.gif".format(params["model"], params["tag"], idx, args.input_param), writer="ffmpeg")
+# If an error occurs in generating the gif animation or mp4, change the writer (imagemagick/ffmpeg).
+# ani.save("./output/{}_{}_{}_{}.gif".format(params["model"], params["tag"], idx, args.input_param), writer="imagemagick")
+# ani.save("./output/{}_{}_{}_{}.mp4".format(params["model"], params["tag"], idx, args.input_param), writer="ffmpeg")

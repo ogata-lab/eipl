@@ -68,7 +68,7 @@ def resize_img(img, size=(64, 64), reshape_flag=True):
 
     imgs = np.array(imgs)
     if reshape_flag:
-        imgs = imgs.reshape(N, T, size[1], size[0], 3)
+        imgs = imgs.reshape(N, T, size[1], size[0], -1)
     return imgs
 
 
@@ -156,7 +156,16 @@ def get_lissajous(total_step, num_cycle, x_mag, y_mag, delta, dtype=np.float32):
 
 
 def get_lissajous_movie(
-    total_step, num_cycle, x_mag, y_mag, delta, imsize, circle_r, color, vmin=-0.9, vmax=0.9
+    total_step,
+    num_cycle,
+    x_mag,
+    y_mag,
+    delta,
+    imsize,
+    circle_r,
+    color,
+    vmin=-0.9,
+    vmax=0.9,
 ):
     """
     Function to generate a Lissajous curve with movie
@@ -188,7 +197,9 @@ def get_lissajous_movie(
         img = Image.new("RGB", (imsize, imsize), "white")
         draw = ImageDraw.Draw(img)
         # Draws a circle with a specified radius
-        draw.ellipse((_x - circle_r, _y - circle_r, _x + circle_r, _y + circle_r), fill=_color)
+        draw.ellipse(
+            (_x - circle_r, _y - circle_r, _x + circle_r, _y + circle_r), fill=_color
+        )
         imgs.append(np.expand_dims(np.asarray(img), 0))
     imgs = np.vstack(imgs)
 

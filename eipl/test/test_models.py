@@ -22,7 +22,9 @@ model = MTRNNCell(input_dim=12, fast_dim=50, slow_dim=5, fast_tau=2, slow_tau=12
 summary(model, input_size=(batch_size, input_dim))
 
 print("# BasicMTRNN")
-model = BasicMTRNN(in_dim=12, fast_dim=30, slow_dim=5, fast_tau=2, slow_tau=12, activation="tanh")
+model = BasicMTRNN(
+    in_dim=12, fast_dim=30, slow_dim=5, fast_tau=2, slow_tau=12, activation="tanh"
+)
 summary(model, input_dim=(batch_size, input_dim))
 
 print("# BasicLSTM")

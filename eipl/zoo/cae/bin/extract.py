@@ -46,10 +46,14 @@ for data_type in ["train", "test"]:
 
     # load dataset
     grasp_data = SampleDownloader("airec", "grasp_bottle", img_format="CHW")
-    images, joints = grasp_data.load_norm_data(data_type, params['vmin'], params['vmax'])
+    images, joints = grasp_data.load_norm_data(
+        data_type, params["vmin"], params["vmax"]
+    )
     images = torch.tensor(images)
     joint_bounds = np.load(
-        os.path.join(os.path.expanduser("~"), ".eipl/airec/grasp_bottle/joint_bounds.npy")
+        os.path.join(
+            os.path.expanduser("~"), ".eipl/airec/grasp_bottle/joint_bounds.npy"
+        )
     )
 
     # extract image feature

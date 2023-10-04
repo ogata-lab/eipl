@@ -40,6 +40,8 @@ class fullBPTTtrainer:
     def process_epoch(self, data, training=True):
         if not training:
             self.model.eval()
+        else:
+            self.model.train()
 
         total_loss = 0.0
         for n_batch, (x, y) in enumerate(data):

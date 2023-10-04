@@ -53,7 +53,14 @@ class BasicMTRNN(nn.Module):
     """
 
     def __init__(
-        self, in_dim, fast_dim, slow_dim, fast_tau, slow_tau, out_dim=None, activation="tanh"
+        self,
+        in_dim,
+        fast_dim,
+        slow_dim,
+        fast_tau,
+        slow_tau,
+        out_dim=None,
+        activation="tanh",
     ):
         super(BasicMTRNN, self).__init__()
 

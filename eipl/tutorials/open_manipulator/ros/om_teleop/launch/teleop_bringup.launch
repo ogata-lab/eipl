@@ -1,0 +1,25 @@
+<launch>
+
+    <arg name="baudrate" default="1000000"/>
+    <arg name="motor_list" default="11,12,13,14,15"/>
+
+    <node name="dxl_leader_node" pkg="om_teleop" type="leader_bringup.py" output="screen">
+        <param name="freq" type='int' value="10"/>
+        <param name="device" value="/dev/ttyUSB1"/>
+        <param name="baudrate" value="$(arg baudrate)"/>
+        <param name="motor_list" value="$(arg motor_list)"/>
+    </node>
+    
+    <node name="dxl_follower_node" pkg="om_teleop" type="follower_bringup.py" output="screen">
+        <param name="freq" type='int' value="50"/>
+        <param name="device" value="/dev/ttyUSB0"/>
+        <param name="baudrate" value="$(arg baudrate)"/>
+        <param name="motor_list" value="$(arg motor_list)"/>
+    </node>
+
+    <node name="interpolator_node" pkg="om_teleop" type="interplation_node.py" output="screen">
+        <param name="control_freq" type='int' value="50"/>
+        <param name="target_freq" type='int' value="10"/>
+    </node>
+
+</launch>

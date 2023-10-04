@@ -84,11 +84,17 @@ class LossScheduler:
         elif curve_name == "s":
             interpolated_values = self.s_curve_interpolation(start, end, num_points)
         elif curve_name == "inverse_s":
-            interpolated_values = self.inverse_s_curve_interpolation(start, end, num_points)
+            interpolated_values = self.inverse_s_curve_interpolation(
+                start, end, num_points
+            )
         elif curve_name == "deceleration":
-            interpolated_values = self.deceleration_curve_interpolation(start, end, num_points)
+            interpolated_values = self.deceleration_curve_interpolation(
+                start, end, num_points
+            )
         elif curve_name == "acceleration":
-            interpolated_values = self.acceleration_curve_interpolation(start, end, num_points)
+            interpolated_values = self.acceleration_curve_interpolation(
+                start, end, num_points
+            )
         else:
             assert False, "Invalid curve name. {}".format(curve_name)
 

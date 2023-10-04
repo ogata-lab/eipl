@@ -28,7 +28,9 @@ def load_data(dir):
 
         images.append(resize_img(npz_data["images"][:-skip], (128, 128)))
         finger_state = cos_interpolation(npz_data["finger_state"])
-        _joints = np.concatenate((npz_data["joints"][:-skip], finger_state[:-skip]), axis=-1)
+        _joints = np.concatenate(
+            (npz_data["joints"][:-skip], finger_state[:-skip]), axis=-1
+        )
         joints.append(_joints)
         seq_length.append(len(_joints))
 
@@ -55,4 +57,5 @@ if __name__ == "__main__":
 
     # save joint bounds
     joint_bounds = calc_minmax(joints)
+    np.save("./data/joint_bounds.npy", joint_bounds)
     np.save("./data/joint_bounds.npy", joint_bounds)

@@ -19,9 +19,8 @@ class TimeSeriesDataSet(Dataset):
         minmax (float, optional):  Set normalization range, default is [0.1,0.9].
     """
 
-    def __init__(self, feats, joints, minmax=[0.1, 0.9], stdev=0.0, training=True):
+    def __init__(self, feats, joints, minmax=[0.1, 0.9], stdev=0.0):
         self.stdev = stdev
-        self.training = training
         self.feats = torch.from_numpy(feats).float()
         self.joints = torch.from_numpy(joints).float()
 
@@ -35,9 +34,13 @@ class TimeSeriesDataSet(Dataset):
         y_data = torch.concat((y_feat, y_joint), axis=-1)
 
         # apply gaussian noise to joint angles and image features
-        if self.training:
-            x_feat = self.feats[idx] + torch.normal(mean=0, std=self.stdev, size=y_feat.shape)
-            x_joint = self.joints[idx] + torch.normal(mean=0, std=self.stdev, size=y_joint.shape)
+        if self.stdev is not None:
+            x_feat = self.feats[idx] + torch.normal(
+                mean=0, std=self.stdev, size=y_feat.shape
+            )
+            x_joint = self.joints[idx] + torch.normal(
+                mean=0, std=self.stdev, size=y_joint.shape
+            )
         else:
             x_feat = self.feats[idx]
             x_joint = self.joints[idx]
@@ -48,9 +51,7 @@ class TimeSeriesDataSet(Dataset):
 
 
 if __name__ == "__main__":
-    import cv2
     import time
-    from eipl.utils import deprocess_img, tensor2numpy
 
     # random dataset
     feats = np.random.randn(10, 120, 10)

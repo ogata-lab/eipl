@@ -120,4 +120,3 @@ class CAEBN(nn.Module):
 
     def forward(self, x):
         return self.decoder(self.encoder(x))
-

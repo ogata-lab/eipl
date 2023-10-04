@@ -27,7 +27,7 @@ params = restore_args(os.path.join(dir_name, "args.json"))
 
 # load dataset
 grasp_data = SampleDownloader("airec", "grasp_bottle", img_format="CHW")
-images, _ = grasp_data.load_norm_data("test", params['vmin'], params['vmax'])
+images, _ = grasp_data.load_norm_data("test", params["vmin"], params["vmax"])
 N, T, C, W, H = images.shape
 images = images.reshape(N * T, C, W, H)
 images = torch.tensor(images)
@@ -43,6 +43,9 @@ elif params["model"] == "CAEBN":
     model = CAEBN(feat_dim=params["feat_dim"])
 else:
     assert False, "Unknown model name {}".format(params["model"])
+
+if params["compile"]:
+    model = torch.compile(model)
 
 # load weight
 ckpt = torch.load(args.filename, map_location=torch.device("cpu"))
@@ -70,7 +73,9 @@ def anim_update(i):
 
     c_list = ["C0", "C1", "C2", "C3", "C4"]
     for n, color in enumerate(c_list):
-        ax.scatter(pca_val[n, 1:, 0], pca_val[n, 1:, 1], pca_val[n, 1:, 2], color=color, s=3.0)
+        ax.scatter(
+            pca_val[n, 1:, 0], pca_val[n, 1:, 1], pca_val[n, 1:, 2], color=color, s=3.0
+        )
 
     ax.scatter(pca_val[n, 0, 0], pca_val[n, 0, 1], pca_val[n, 0, 2], color="k", s=30.0)
     pca_ratio = pca.explained_variance_ratio_ * 100
@@ -82,6 +87,6 @@ def anim_update(i):
 ani = anim.FuncAnimation(fig, anim_update, interval=T, frames=T)
 ani.save("./output/PCA_{}_{}.gif".format(params["model"], params["tag"]))
 
-# If an error occurs in generating the gif animation, change the writer (imagemagick/ffmpeg).
-#ani.save("./output/PCA_{}_{}.gif".format(params["model"], params["tag"]), writer="imagemagick")
-#ani.save("./output/PCA_{}_{}.gif".format(params["model"], params["tag"]), writer="ffmpeg")
+# If an error occurs in generating the gif animation or mp4, change the writer (imagemagick/ffmpeg).
+# ani.save("./output/PCA_{}_{}.gif".format(params["model"], params["tag"]), writer="imagemagick")
+# ani.save("./output/PCA_{}_{}.mp4".format(params["model"], params["tag"]), writer="ffmpeg")

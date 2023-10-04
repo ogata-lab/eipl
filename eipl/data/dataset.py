@@ -7,7 +7,7 @@
 
 import torch
 from torchvision import transforms
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader
 
 
 class ImageDataset(Dataset):
@@ -20,7 +20,7 @@ class ImageDataset(Dataset):
         stdev (float, optional): Set the standard deviation for normal distribution to generate noise.
     """
 
-    def __init__(self, data, stdev=0.0, training=True):
+    def __init__(self, data, stdev=None):
         """
         Reshapes and transforms the data.
 
@@ -30,7 +30,6 @@ class ImageDataset(Dataset):
         """
 
         self.stdev = stdev
-        self.training = training
         _image_flatten = data.reshape(((-1,) + data.shape[-3:]))
         self.image_flatten = torch.from_numpy(_image_flatten).float()
 
@@ -44,7 +43,9 @@ class ImageDataset(Dataset):
         )
         self.transform_noise = transforms.Compose(
             [
-                transforms.ColorJitter(contrast=0.5, brightness=0.5),
+                transforms.ColorJitter(
+                    contrast=[0.6, 1.4], brightness=0.4, saturation=[0.6, 1.4], hue=0.04
+                )
             ]
         )
 
@@ -70,7 +71,7 @@ class ImageDataset(Dataset):
         """
         img = self.image_flatten[idx]
 
-        if self.training:
+        if self.stdev is not None:
             y_img = self.transform_affine(img)
             x_img = self.transform_noise(y_img) + torch.normal(
                 mean=0, std=self.stdev, size=y_img.shape
@@ -92,7 +93,7 @@ class MultimodalDataset(Dataset):
         stdev (float, optional): Set the standard deviation for normal distribution to generate noise.
     """
 
-    def __init__(self, images, joints, stdev=0.0, training=True):
+    def __init__(self, images, joints, stdev=None):
         """
         The constructor of Multimodal Dataset class. Initializes the images, joints, and transformation.
 
@@ -102,10 +103,11 @@ class MultimodalDataset(Dataset):
             stdev (float, optional): The standard deviation for the normal distribution to generate noise. Defaults to 0.02.
         """
         self.stdev = stdev
-        self.training = training
         self.images = torch.from_numpy(images).float()
         self.joints = torch.from_numpy(joints).float()
-        self.transform = transforms.ColorJitter(contrast=0.5, brightness=0.5, saturation=0.1)
+        self.transform = transforms.ColorJitter(
+            contrast=[0.6, 1.4], brightness=0.4, saturation=[0.6, 1.4], hue=0.04
+        )
 
     def __len__(self):
         """
@@ -126,12 +128,43 @@ class MultimodalDataset(Dataset):
         y_img = self.images[idx]
         y_joint = self.joints[idx]
 
-        if self.training:
-            x_img = self.transform(self.images[idx])
-            x_img = x_img + torch.normal(mean=0, std=self.stdev, size=x_img.shape)
-            x_joint = self.joints[idx] + torch.normal(mean=0, std=self.stdev, size=y_joint.shape)
+        if self.stdev is not None:
+            x_img = self.transform(y_img)
+            x_img = x_img + torch.normal(mean=0, std=0.02, size=x_img.shape)
+            x_joint = y_joint + torch.normal(mean=0, std=self.stdev, size=y_joint.shape)
         else:
-            x_img = self.images[idx]
-            x_joint = self.joints[idx]
+            x_img = y_img
+            x_joint = y_joint
 
         return [[x_img, x_joint], [y_img, y_joint]]
+
+
+class MultiEpochsDataLoader(DataLoader):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._DataLoader__initialized = False
+        self.batch_sampler = _RepeatSampler(self.batch_sampler)
+        self._DataLoader__initialized = True
+        self.iterator = super().__iter__()
+
+    def __len__(self):
+        return len(self.batch_sampler.sampler)
+
+    def __iter__(self):
+        for _ in range(len(self)):
+            yield next(self.iterator)
+
+
+class _RepeatSampler(object):
+    """Sampler that repeats forever.
+
+    Args:
+        sampler (Sampler)
+    """
+
+    def __init__(self, sampler):
+        self.sampler = sampler
+
+    def __iter__(self):
+        while True:
+            yield from iter(self.sampler)

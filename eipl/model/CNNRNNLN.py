@@ -85,4 +85,3 @@ class CNNRNNLN(nn.Module):
         y_image = self.decoder_image(rnn_hid[0])
 
         return y_image, y_joint, rnn_hid
-

@@ -32,7 +32,9 @@ assert args.filename or args.pretrained, "Please set filename or pretrained"
 # load pretrained weight
 if args.pretrained:
     WeightDownloader("airec", "grasp_bottle")
-    args.filename = os.path.join(os.path.expanduser("~"), ".eipl/airec/pretrained/RNN/model.pth")
+    args.filename = os.path.join(
+        os.path.expanduser("~"), ".eipl/airec/grasp_bottle/weights/RNN/model.pth"
+    )
 
 # restore parameters
 dir_name = os.path.split(args.filename)[0]
@@ -56,6 +58,9 @@ elif params["model"] == "MTRNN":
     model = BasicMTRNN(in_dim, fast_dim=60, slow_dim=5, fast_tau=2, slow_tau=12)
 else:
     assert False, "Unknown model name {}".format(params["model"])
+
+if params["compile"]:
+    model = torch.compile(model)
 
 # load weight
 ckpt = torch.load(args.filename, map_location=torch.device("cpu"))
@@ -103,6 +108,6 @@ def anim_update(i):
 ani = anim.FuncAnimation(fig, anim_update, interval=int(np.ceil(T / 10)), frames=T)
 ani.save("./output/{}_{}_{}.gif".format(params["model"], params["tag"], idx))
 
-# If an error occurs in generating the gif animation, change the writer (imagemagick/ffmpeg).
-#ani.save("./output/{}_{}_{}.gif".format(params["model"], params["tag"], idx), writer="imagemagick")
-#ani.save("./output/{}_{}_{}.mp4".format(params["model"], params["tag"], idx), writer="ffmpeg")
+# If an error occurs in generating the gif animation or mp4, change the writer (imagemagick/ffmpeg).
+# ani.save("./output/{}_{}_{}.gif".format(params["model"], params["tag"], idx), writer="imagemagick")
+# ani.save("./output/{}_{}_{}.mp4".format(params["model"], params["tag"], idx), writer="ffmpeg")

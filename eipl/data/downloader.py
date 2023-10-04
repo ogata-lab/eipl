@@ -7,9 +7,8 @@
 
 import os
 import tarfile
+import gdown
 import numpy as np
-import urllib.request
-from urllib.error import URLError
 from eipl.utils import normalization
 from .data_dict import data_dict
 
@@ -20,8 +19,8 @@ class Downloader:
         self.task = task
         self.root_dir = os.path.join(os.path.expanduser("~"), ".eipl/", robot)
 
-    def _download_tar_files(self, mirror_url):
-        for _url in mirror_url:
+    def _download_tar_files(self, url):
+        for _url in url:
             self._download(_url)
 
     def _check_exists(self, filepath):
@@ -36,25 +35,20 @@ class Downloader:
         """
         return os.path.isfile(filepath)
 
-    def _download(self, mirror_url):
+    def _download(self, url):
         """Download the data if it doesn't exist already."""
 
-        filename = os.path.splitext(os.path.basename(mirror_url))[0]
-        root_dir = os.path.join(os.path.expanduser("~"), ".eipl/", self.robot)
-        tar_file = os.path.join(root_dir, filename + ".tar")
+        output = os.path.join(self.root_dir, self.task + ".tar")
         os.makedirs(self.root_dir, exist_ok=True)
 
         # download files
-        try:
-            if not self._check_exists(tar_file):
-                print(f"Downloading {mirror_url}")
-                urllib.request.urlretrieve(mirror_url, tar_file)
+        if not self._check_exists(output):
+            print(f"Downloading {url}")
+            gdown.download(url, output, quiet=False, verify=False)
 
-            with tarfile.open(tar_file, "r:tar") as tar:
-                tar.extractall(path=self.root_dir)
-
-        except URLError as error:
-            raise RuntimeError(f"Error downloading")
+        # unzip the tar file
+        with tarfile.open(output, "r:tar") as tar:
+            tar.extractall(path=self.root_dir)
 
 
 class SampleDownloader(Downloader):
@@ -78,11 +72,9 @@ class SampleDownloader(Downloader):
         self.robot = robot
         self.task = task
         self.img_format = img_format
-        self.root_dir = os.path.join(os.path.expanduser("~"), ".eipl/", robot)
-        mirror_urls = data_dict[robot][task]
 
         # download data
-        self._download_tar_files(mirror_urls)
+        self._download_tar_files(data_dict[robot][task])
 
         # load npy data
         self.joint_bounds = self._load_bounds()
@@ -96,7 +88,9 @@ class SampleDownloader(Downloader):
         Returns:
             joint_bounds (numpy.array): The min/max bounder of joints angles, expected to be 2D array
         """
-        joint_bounds = np.load(os.path.join(self.root_dir, self.task, "joint_bounds.npy"))
+        joint_bounds = np.load(
+            os.path.join(self.root_dir, self.task, "joint_bounds.npy")
+        )
 
         return joint_bounds
 
@@ -111,8 +105,12 @@ class SampleDownloader(Downloader):
             images (numpy.array): The images data, expected to be a 5D array [data_num, seq_num, channel, height, width].
             joints (numpy.array): The joints data, expected to be a 3D array [data_num, seq_num, joint_dim].
         """
-        joints = np.load(os.path.join(self.root_dir, self.task, data_type, "joints.npy"))
-        images = np.load(os.path.join(self.root_dir, self.task, data_type, "images.npy"))
+        joints = np.load(
+            os.path.join(self.root_dir, self.task, data_type, "joints.npy")
+        )
+        images = np.load(
+            os.path.join(self.root_dir, self.task, data_type, "images.npy")
+        )
         if self.img_format == "CHW":
             images = images.transpose(0, 1, 4, 2, 3)
 
@@ -142,8 +140,12 @@ class SampleDownloader(Downloader):
             joints (numpy.array): The joints data, expected to be a 3D array [data_num, seq_num, joint_dim].
         """
         images_raw, joints_raw = self._load_data(data_type)
-        images = normalization(images_raw.astype(np.float32), (0.0, 255.0), (vmin, vmax))
-        joints = normalization(joints_raw.astype(np.float32), self.joint_bounds, (vmin, vmax))
+        images = normalization(
+            images_raw.astype(np.float32), (0.0, 255.0), (vmin, vmax)
+        )
+        joints = normalization(
+            joints_raw.astype(np.float32), self.joint_bounds, (vmin, vmax)
+        )
 
         return images, joints
 
@@ -164,9 +166,6 @@ class WeightDownloader(Downloader):
 
     def __init__(self, robot, task):
         super().__init__(robot=robot, task=task)
-        self.robot = robot
-        self.task = task
-        self.root_dir = os.path.join(os.path.expanduser("~"), ".eipl/", robot)
 
         # download data
         self._download_tar_files(data_dict[robot][task])

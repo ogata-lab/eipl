@@ -1,4 +1,3 @@
-
 #
 # Copyright (c) 2023 Ogata Laboratory, Waseda University
 #
@@ -9,11 +8,12 @@
 data_dict = {
     "airec": {
         "grasp_bottle": {
-            "https://dl.dropboxusercontent.com/s/5gz1j4uzpzhnttt/grasp_bottle.tar",
-            "https://dl.dropboxusercontent.com/s/o29j0kiqwtqlk9v/pretrained.tar",
+            "https://drive.google.com/uc?id=11NhuH35DR2Pg7gWqOIhw5yJ_Nmeto-wO"
         }
     },
     "om": {
-        "grasp_cube": None,
+        "grasp_cube": {
+            "https://drive.google.com/uc?id=16M0wEPleiRAucZeGRcUel5yO8ou7R-SA"
+        }
     },
 }

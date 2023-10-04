@@ -21,7 +21,9 @@ def create_position_encoding(
         )
     else:
         pos_x, pos_y = np.meshgrid(
-            np.linspace(0, height - 1, height), np.linspace(0, width - 1, width), indexing="xy"
+            np.linspace(0, height - 1, height),
+            np.linspace(0, width - 1, width),
+            indexing="xy",
         )
 
     if data_format == "channels_first":
@@ -49,10 +51,7 @@ class SpatialSoftmax(nn.Module):
         super(SpatialSoftmax, self).__init__()
         self.width = width
         self.height = height
-        if temperature is None:
-            self.temperature = torch.nn.Parameter(torch.ones(1))
-        else:
-            self.temperature = temperature
+        self.temperature = temperature
 
         _, pos_x, pos_y = create_position_encoding(width, height, normalized=normalized)
         self.register_buffer("pos_x", pos_x)

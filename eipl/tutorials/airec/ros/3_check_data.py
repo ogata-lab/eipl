@@ -29,7 +29,11 @@ norm_joints = normalization(joints, joint_bounds, minmax)
 
 # print data information
 print("load test data, index number is {}".format(idx))
-print("Joint: shape={}, min={:.3g}, max={:.3g}".format(joints.shape, joints.min(), joints.max()))
+print(
+    "Joint: shape={}, min={:.3g}, max={:.3g}".format(
+        joints.shape, joints.min(), joints.max()
+    )
+)
 print(
     "Norm joint: shape={}, min={:.3g}, max={:.3g}".format(
         norm_joints.shape, norm_joints.min(), norm_joints.max()

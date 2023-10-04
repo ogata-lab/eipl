@@ -28,28 +28,34 @@ dir_name = os.path.split(args.filename)[0]
 params = restore_args(os.path.join(dir_name, "args.json"))
 
 # load dataset
-minmax = [ params['vmin'], params['vmax'] ]
+minmax = [params["vmin"], params["vmax"]]
 grasp_data = SampleDownloader("airec", "grasp_bottle", img_format="HWC")
 images, joints = grasp_data.load_raw_data("test")
-joint_bounds = np.load(
-    os.path.join(os.path.expanduser("~"), ".eipl/airec/grasp_bottle/joint_bounds.npy")
+joint_bounds = grasp_data.joint_bounds
+print(
+    "images shape:{}, min={}, max={}".format(images.shape, images.min(), images.max())
 )
-print("images shape:{}, min={}, max={}".format(images.shape, images.min(), images.max()))
-print("joints shape:{}, min={}, max={}".format(joints.shape, joints.min(), joints.max()))
+print(
+    "joints shape:{}, min={}, max={}".format(joints.shape, joints.min(), joints.max())
+)
 
 # define model
 if params["model"] == "CNNRNN":
     model = CNNRNN(rec_dim=params["rec_dim"], joint_dim=8, feat_dim=params["feat_dim"])
 elif params["model"] == "CNNRNNLN":
-    model = CNNRNNLN(rec_dim=params["rec_dim"], joint_dim=8, feat_dim=params["feat_dim"])
+    model = CNNRNNLN(
+        rec_dim=params["rec_dim"], joint_dim=8, feat_dim=params["feat_dim"]
+    )
 else:
     assert False, "Unknown model name {}".format(params["model"])
+
+if params["compile"]:
+    model = torch.compile(model)
 
 # load weight
 ckpt = torch.load(args.filename, map_location=torch.device("cpu"))
 model.load_state_dict(ckpt["model_state_dict"])
 model.eval()
-
 
 # Inference
 states = []
@@ -96,7 +102,9 @@ def anim_update(i):
 
     c_list = ["C0", "C1", "C2", "C3", "C4"]
     for n, color in enumerate(c_list):
-        ax.scatter(pca_val[n, 1:, 0], pca_val[n, 1:, 1], pca_val[n, 1:, 2], color=color, s=3.0)
+        ax.scatter(
+            pca_val[n, 1:, 0], pca_val[n, 1:, 1], pca_val[n, 1:, 2], color=color, s=3.0
+        )
 
     ax.scatter(pca_val[n, 0, 0], pca_val[n, 0, 1], pca_val[n, 0, 2], color="k", s=30.0)
     pca_ratio = pca.explained_variance_ratio_ * 100
@@ -108,6 +116,6 @@ def anim_update(i):
 ani = anim.FuncAnimation(fig, anim_update, interval=int(np.ceil(T / 10)), frames=T)
 ani.save("./output/PCA_{}_{}.gif".format(params["model"], params["tag"]))
 
-# If an error occurs in generating the gif animation, change the writer (imagemagick/ffmpeg).
-#ani.save("./output/PCA_{}_{}.gif".format(params["model"], params["tag"]), writer="imagemagick")
-#ani.save("./output/PCA_{}_{}.gif".format(params["model"], params["tag"]), writer="ffmpeg")
+# If an error occurs in generating the gif animation or mp4, change the writer (imagemagick/ffmpeg).
+# ani.save("./output/PCA_{}_{}.gif".format(params["model"], params["tag"]), writer="imagemagick")
+# ani.save("./output/PCA_{}_{}.mp4".format(params["model"], params["tag"]), writer="ffmpeg")

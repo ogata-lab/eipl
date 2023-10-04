@@ -40,6 +40,7 @@ parser.add_argument("--log_dir", default="log/")
 parser.add_argument("--vmin", type=float, default=0.0)
 parser.add_argument("--vmax", type=float, default=1.0)
 parser.add_argument("--device", type=int, default=-1)
+parser.add_argument("--compile", action="store_true")
 parser.add_argument("--tag", help="Tag name for snap/log sub directory")
 args = parser.parse_args()
 
@@ -63,20 +64,28 @@ train_feats = normalization(_feats, feat_bounds, minmax)
 train_joints = np.load("../cae/data/train/joints.npy")
 in_dim = train_feats.shape[-1] + train_joints.shape[-1]
 train_dataset = TimeSeriesDataSet(
-    train_feats, train_joints, minmax=[args.vmin, args.vmax], stdev=stdev, training=True
+    train_feats, train_joints, minmax=[args.vmin, args.vmax], stdev=stdev
 )
 train_loader = torch.utils.data.DataLoader(
-    train_dataset, batch_size=args.batch_size, shuffle=True, drop_last=False, pin_memory=True
+    train_dataset,
+    batch_size=args.batch_size,
+    shuffle=True,
+    drop_last=False,
+    pin_memory=True,
 )
 
 _feats = np.load("../cae/data/test/features.npy")
 test_feats = normalization(_feats, feat_bounds, minmax)
 test_joints = np.load("../cae/data/test/joints.npy")
 test_dataset = TimeSeriesDataSet(
-    test_feats, test_joints, minmax=[args.vmin, args.vmax], stdev=0.0, training=False
+    test_feats, test_joints, minmax=[args.vmin, args.vmax], stdev=None
 )
 test_loader = torch.utils.data.DataLoader(
-    test_dataset, batch_size=args.batch_size, shuffle=True, drop_last=False, pin_memory=True
+    test_dataset,
+    batch_size=args.batch_size,
+    shuffle=True,
+    drop_last=False,
+    pin_memory=True,
 )
 
 # define model
@@ -87,13 +96,20 @@ elif args.model == "MTRNN":
 else:
     assert False, "Unknown model name {}".format(args.model)
 
+# torch.compile makes PyTorch code run faster
+if args.compile:
+    torch.set_float32_matmul_precision("high")
+    model = torch.compile(model)
+
 # set optimizer
 if args.optimizer.casefold() == "adam":
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
 elif args.optimizer.casefold() == "radam":
     optimizer = optim.RAdam(model.parameters(), lr=args.lr)
 else:
-    assert False, "Unknown optimizer name {}. please set Adam or RAdam.".format(args.optimizer)
+    assert False, "Unknown optimizer name {}. please set Adam or RAdam.".format(
+        args.optimizer
+    )
 
 # load trainer/tester class
 trainer = fullBPTTtrainer(model, optimizer, device=device)
@@ -108,7 +124,8 @@ with tqdm(range(args.epoch)) as pbar_epoch:
     for epoch in pbar_epoch:
         # train and test
         train_loss = trainer.process_epoch(train_loader)
-        test_loss = trainer.process_epoch(test_loader, training=False)
+        with torch.no_grad():
+            test_loss = trainer.process_epoch(test_loader, training=False)
         writer.add_scalar("Loss/train_loss", train_loss, epoch)
         writer.add_scalar("Loss/test_loss", test_loss, epoch)
 

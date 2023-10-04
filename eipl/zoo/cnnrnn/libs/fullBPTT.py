@@ -41,6 +41,8 @@ class fullBPTTtrainer:
     def process_epoch(self, data, training=True):
         if not training:
             self.model.eval()
+        else:
+            self.model.train()
 
         total_loss = 0.0
         for n_batch, ((x_img, x_joint), (y_img, y_joint)) in enumerate(data):
@@ -59,9 +61,9 @@ class fullBPTTtrainer:
 
             yi_hat = torch.permute(torch.stack(yi_list), (1, 0, 2, 3, 4))
             yv_hat = torch.permute(torch.stack(yv_list), (1, 0, 2))
-            loss = self.loss_weights[0] * nn.MSELoss()(yi_hat, y_img[:, 1:]) + self.loss_weights[
-                1
-            ] * nn.MSELoss()(yv_hat, y_joint[:, 1:])
+            loss = self.loss_weights[0] * nn.MSELoss()(
+                yi_hat, y_img[:, 1:]
+            ) + self.loss_weights[1] * nn.MSELoss()(yv_hat, y_joint[:, 1:])
             total_loss += loss.item()
 
             if training:

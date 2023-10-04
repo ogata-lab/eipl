@@ -14,7 +14,7 @@ import torch.optim as optim
 from collections import OrderedDict
 from torch.utils.tensorboard import SummaryWriter
 from eipl.model import CNNRNN, CNNRNNLN
-from eipl.data import MultimodalDataset, SampleDownloader
+from eipl.data import MultimodalDataset, SampleDownloader, MultiEpochsDataLoader
 from eipl.utils import EarlyStopping, check_args, set_logdir
 
 try:
@@ -25,7 +25,9 @@ except:
 
 
 # argument parser
-parser = argparse.ArgumentParser(description="Learning convolutional and recurrent neural network")
+parser = argparse.ArgumentParser(
+    description="Learning convolutional and recurrent neural network"
+)
 parser.add_argument("--model", type=str, default="CNNRNN")
 parser.add_argument("--epoch", type=int, default=10000)
 parser.add_argument("--batch_size", type=int, default=5)
@@ -40,6 +42,8 @@ parser.add_argument("--log_dir", default="log/")
 parser.add_argument("--vmin", type=float, default=0.0)
 parser.add_argument("--vmax", type=float, default=1.0)
 parser.add_argument("--device", type=int, default=0)
+parser.add_argument("--n_worker", type=int, default=8)
+parser.add_argument("--compile", action="store_true")
 parser.add_argument("--tag", help="Tag name for snap/log sub directory")
 args = parser.parse_args()
 
@@ -59,15 +63,25 @@ else:
 minmax = [args.vmin, args.vmax]
 grasp_data = SampleDownloader("airec", "grasp_bottle", img_format="CHW")
 images, joints = grasp_data.load_norm_data("train", vmin=args.vmin, vmax=args.vmax)
-train_dataset = MultimodalDataset(images, joints, stdev=stdev, training=True)
-train_loader = torch.utils.data.DataLoader(
-    train_dataset, batch_size=args.batch_size, shuffle=True, drop_last=False, pin_memory=True
+train_dataset = MultimodalDataset(images, joints, stdev=stdev)
+train_loader = MultiEpochsDataLoader(
+    train_dataset,
+    batch_size=args.batch_size,
+    shuffle=True,
+    num_workers=args.n_worker,
+    drop_last=False,
+    pin_memory=True,
 )
 
 images, joints = grasp_data.load_norm_data("test", vmin=args.vmin, vmax=args.vmax)
-test_dataset = MultimodalDataset(images, joints, stdev=0.0, training=False)
-test_loader = torch.utils.data.DataLoader(
-    test_dataset, batch_size=args.batch_size, shuffle=True, drop_last=False, pin_memory=True
+test_dataset = MultimodalDataset(images, joints, stdev=None)
+test_loader = MultiEpochsDataLoader(
+    test_dataset,
+    batch_size=args.batch_size,
+    shuffle=True,
+    num_workers=args.n_worker,
+    drop_last=False,
+    pin_memory=True,
 )
 
 # define model
@@ -78,13 +92,20 @@ elif args.model == "CNNRNNLN":
 else:
     assert False, "Unknown model name {}".format(args.model)
 
+# torch.compile makes PyTorch code run faster
+if args.compile:
+    torch.set_float32_matmul_precision("high")
+    model = torch.compile(model)
+
 # set optimizer
 if args.optimizer.casefold() == "adam":
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
 elif args.optimizer.casefold() == "radam":
     optimizer = optim.RAdam(model.parameters(), lr=args.lr)
 else:
-    assert False, "Unknown optimizer name {}. please set Adam or RAdam.".format(args.optimizer)
+    assert False, "Unknown optimizer name {}. please set Adam or RAdam.".format(
+        args.optimizer
+    )
 
 # load trainer/tester class
 loss_weights = [args.img_loss, args.joint_loss]
@@ -100,7 +121,8 @@ with tqdm(range(args.epoch)) as pbar_epoch:
     for epoch in pbar_epoch:
         # train and test
         train_loss = trainer.process_epoch(train_loader)
-        test_loss = trainer.process_epoch(test_loader, training=False)
+        with torch.no_grad():
+            test_loss = trainer.process_epoch(test_loader, training=False)
         writer.add_scalar("Loss/train_loss", train_loss, epoch)
         writer.add_scalar("Loss/test_loss", test_loss, epoch)
 

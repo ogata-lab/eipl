@@ -38,7 +38,9 @@ class AddCoords(nn.Module):
         y = torch.cat([x, xx_channel, yy_channel], dim=1)
 
         if self.with_r:
-            rr = torch.sqrt(torch.pow(xx_channel - 0.5, 2) + torch.pow(yy_channel - 0.5, 2))
+            rr = torch.sqrt(
+                torch.pow(xx_channel - 0.5, 2) + torch.pow(yy_channel - 0.5, 2)
+            )
             y = torch.cat([y, rr], dim=1)
 
         return y
@@ -66,7 +68,14 @@ class CoordConv2d(conv.Conv2d):
         with_r=False,
     ):
         super(CoordConv2d, self).__init__(
-            input_size, output_size, kernel_size, stride, padding, dilation, groups, bias
+            input_size,
+            output_size,
+            kernel_size,
+            stride,
+            padding,
+            dilation,
+            groups,
+            bias,
         )
         rank = 2
         self.addcoords = AddCoords(min_range=min_range, with_r=with_r)

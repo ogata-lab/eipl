@@ -15,8 +15,16 @@ from eipl.data import SampleDownloader
 grasp_data = SampleDownloader("airec", "grasp_bottle", img_format="HWC")
 images, joints = grasp_data.load_raw_data("train")
 print_info("Load raw data")
-print("images: shape={}, min={:.2f}, max={:.2f}".format(images.shape, images.min(), images.max()))
-print("joints: shape={}, min={:.2f}, max={:.2f}".format(joints.shape, joints.min(), joints.max()))
+print(
+    "images: shape={}, min={:.2f}, max={:.2f}".format(
+        images.shape, images.min(), images.max()
+    )
+)
+print(
+    "joints: shape={}, min={:.2f}, max={:.2f}".format(
+        joints.shape, joints.min(), joints.max()
+    )
+)
 
 # plot animation
 idx = 0

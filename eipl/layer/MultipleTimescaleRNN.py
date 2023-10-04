@@ -103,7 +103,9 @@ class MTRNNCell(nn.Module):
         if pb is not None:
             _input_slow += pb
 
-        new_u_slow = (1.0 - 1.0 / self.slow_tau) * prev_u_slow + 1.0 / self.slow_tau * _input_slow
+        new_u_slow = (
+            1.0 - 1.0 / self.slow_tau
+        ) * prev_u_slow + 1.0 / self.slow_tau * _input_slow
 
         new_h_fast = self.activation(new_u_fast)
         new_h_slow = self.activation(new_u_slow)

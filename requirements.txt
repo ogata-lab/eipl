@@ -1,5 +1,6 @@
 ###### Requirements without Version Specifiers ######
 scipy
+gdown
 matplotlib
 ipdb
 opencv-python

@@ -21,7 +21,9 @@ in_features = get_feature_map(im_size=im_size, channels=channels)
 print("in_features shape: ", in_features.shape)
 
 # Apply spetial softmax, get keypoints and attention map
-ssm = SpatialSoftmax(width=im_size, height=im_size, temperature=temperature, normalized=True)
+ssm = SpatialSoftmax(
+    width=im_size, height=im_size, temperature=temperature, normalized=True
+)
 keypoints, att_map = ssm(torch.tensor(in_features))
 print("keypoints shape: ", keypoints.shape)
 
@@ -37,7 +39,9 @@ plt.figure(dpi=60)
 # feature map
 for i in range(1, channels + 1):
     plt.subplot(2, channels, i)
-    plt_img(in_features[0, i - 1], key=keypoints[0, i - 1], title="feature map {}".format(i))
+    plt_img(
+        in_features[0, i - 1], key=keypoints[0, i - 1], title="feature map {}".format(i)
+    )
 
 # plot heatmap
 for i in range(1, channels + 1):
@@ -47,4 +51,3 @@ for i in range(1, channels + 1):
 plt.tight_layout()
 # plt.savefig("spatial_softmax.png")
 plt.show()
-
