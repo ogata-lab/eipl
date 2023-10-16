@@ -129,7 +129,7 @@ Download the demonstration dataset from [this link](https://drive.google.com/fil
 
 
 
-# Train Model
+# Model Training
 Move to the `sarnn folder` and start training the model. The trained weights are saved in the log folder. If you want to perform validation without training the model, download the trained weights from [here](https://drive.google.com/file/d/1H4NKKAsNG0gwPemBR1N34s5A94KOH6R1/view?usp=sharing) and save it in the log folder.
 
 

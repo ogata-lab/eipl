@@ -86,7 +86,7 @@ pca_val = pca.transform(states)
 pca_val = pca_val.reshape(N, T, pca_dim)
 
 # plot images
-fig = plt.figure(dpi=60)
+fig = plt.figure(dpi=120)
 ax = fig.add_subplot(projection="3d")
 
 
@@ -106,6 +106,9 @@ def anim_update(i):
     ax.set_xlabel("PC1 ({:.1f}%)".format(pca_ratio[0]))
     ax.set_ylabel("PC2 ({:.1f}%)".format(pca_ratio[1]))
     ax.set_zlabel("PC3 ({:.1f}%)".format(pca_ratio[2]))
+    ax.tick_params(axis="x", labelsize=8)
+    ax.tick_params(axis="y", labelsize=8)
+    ax.tick_params(axis="z", labelsize=8)
 
 
 ani = anim.FuncAnimation(fig, anim_update, interval=int(np.ceil(T / 10)), frames=T)

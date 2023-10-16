@@ -41,7 +41,7 @@ print(
 )
 
 # plot images and normalized joints
-fig, ax = plt.subplots(1, 3, figsize=(14, 5), dpi=60)
+fig, ax = plt.subplots(1, 3, figsize=(14, 6), dpi=60)
 
 
 def anim_update(i):
@@ -51,7 +51,7 @@ def anim_update(i):
     # plot image
     ax[0].imshow(images[idx, i])
     ax[0].axis("off")
-    ax[0].set_title("Image")
+    ax[0].set_title("Image", fontsize=20)
 
     # plot joint angle
     ax[1].set_ylim(-1.0, 2.0)
@@ -60,8 +60,10 @@ def anim_update(i):
 
     for joint_idx in range(8):
         ax[1].plot(np.arange(i + 1), joints[idx, : i + 1, joint_idx])
-    ax[1].set_xlabel("Step")
-    ax[1].set_title("Joint angles")
+    ax[1].set_xlabel("Step", fontsize=20)
+    ax[1].set_title("Joint angles", fontsize=20)
+    ax[1].tick_params(axis="x", labelsize=16)
+    ax[1].tick_params(axis="y", labelsize=16)
 
     # plot normalized joint angle
     ax[2].set_ylim(0.0, 1.0)
@@ -70,8 +72,11 @@ def anim_update(i):
 
     for joint_idx in range(8):
         ax[2].plot(np.arange(i + 1), norm_joints[idx, : i + 1, joint_idx])
-    ax[2].set_xlabel("Step")
-    ax[2].set_title("Normalized joint angles")
+    ax[2].set_xlabel("Step", fontsize=20)
+    ax[2].set_title("Normalized joint angles", fontsize=20)
+    ax[2].tick_params(axis="x", labelsize=16)
+    ax[2].tick_params(axis="y", labelsize=16)
+    plt.subplots_adjust(left=0.01, right=0.98, bottom=0.12, top=0.9)
 
 
 ani = anim.FuncAnimation(fig, anim_update, interval=int(N / 10), frames=N)

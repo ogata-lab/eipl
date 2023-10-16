@@ -28,8 +28,8 @@ class MTRNNCell(nn.Module):
         use_pb (Boolean, optional): whether the recurrent uses a pb vector. The default is False.
 
     Yuichi Yamashita, Jun Tani,
-    "Emergence of Functional Hierarchy in a Multiple Timescale Neural Network Model: A Humanoid Robot Experiment.", NeurIPS 2018.
-    https://arxiv.org/abs/1807.03247v2
+    "Emergence of functional hierarchy in a multiple timescale neural network model: a humanoid robot experiment." PLoS computational biology, 2008.
+    https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1000220
     """
 
     def __init__(

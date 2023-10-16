@@ -31,7 +31,7 @@ poses = data["poses"]
 joints = np.concatenate((data["joints"], data["gripper"]), axis=-1)
 
 N = len(joints)
-fig, ax = plt.subplots(1, 3, figsize=(12, 3))
+fig, ax = plt.subplots(1, 3, figsize=(14, 6), dpi=60)
 
 
 def anim_update(i):
@@ -41,16 +41,26 @@ def anim_update(i):
 
     ax[0].imshow(np.flipud(images[i]))
     ax[0].axis("off")
+    ax[0].set_title("Image", fontsize=20)
 
     ax[1].set_ylim(-3.5, 3.5)
     ax[1].set_xlim(0, N)
     for idx in range(8):
         ax[1].plot(np.arange(i + 1), joints[: i + 1, idx])
+    ax[1].set_xlabel("Step", fontsize=20)
+    ax[1].set_title("Joint angles", fontsize=20)
+    ax[1].tick_params(axis="x", labelsize=16)
+    ax[1].tick_params(axis="y", labelsize=16)
 
     ax[2].set_ylim(-3.5, 3.5)
     ax[2].set_xlim(0, N)
     for idx in range(6):
         ax[2].plot(np.arange(i + 1), poses[: i + 1, idx])
+    ax[2].set_xlabel("Step", fontsize=20)
+    ax[2].set_title("End effector poses", fontsize=20)
+    ax[2].tick_params(axis="x", labelsize=16)
+    ax[2].tick_params(axis="y", labelsize=16)
+    plt.subplots_adjust(left=0.01, right=0.98, bottom=0.12, top=0.9)
 
 
 ani = anim.FuncAnimation(fig, anim_update, interval=int(N / 10), frames=N)
