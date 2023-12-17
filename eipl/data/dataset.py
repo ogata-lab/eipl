@@ -6,8 +6,11 @@
 #
 
 import torch
-from torchvision import transforms
 from torch.utils.data import Dataset, DataLoader
+try:
+    from torchvision.transforms import v2 as transforms
+except ImportError:
+    from torchvision import transforms
 
 
 class ImageDataset(Dataset):
@@ -93,7 +96,7 @@ class MultimodalDataset(Dataset):
         stdev (float, optional): Set the standard deviation for normal distribution to generate noise.
     """
 
-    def __init__(self, images, joints, stdev=None):
+    def __init__(self, images, joints, device, stdev=None):
         """
         The constructor of Multimodal Dataset class. Initializes the images, joints, and transformation.
 
@@ -102,12 +105,13 @@ class MultimodalDataset(Dataset):
             joints (numpy array): The joints data, expected to be a 3D array [data_num, seq_num, joint_dim].
             stdev (float, optional): The standard deviation for the normal distribution to generate noise. Defaults to 0.02.
         """
+        self.device = device
         self.stdev = stdev
-        self.images = torch.from_numpy(images).float()
-        self.joints = torch.from_numpy(joints).float()
+        self.images = torch.Tensor(images).to(self.device)
+        self.joints = torch.Tensor(joints).to(self.device)
         self.transform = transforms.ColorJitter(
             contrast=[0.6, 1.4], brightness=0.4, saturation=[0.6, 1.4], hue=0.04
-        )
+        ).to(self.device)
 
     def __len__(self):
         """
@@ -125,16 +129,15 @@ class MultimodalDataset(Dataset):
         Returns:
             dataset (list): A list containing lists of transformed and noise added image and joint (x_img, x_joint) and the original image and joint (y_img, y_joint).
         """
+        x_img = self.images[idx]
+        x_joint = self.joints[idx]
         y_img = self.images[idx]
         y_joint = self.joints[idx]
 
         if self.stdev is not None:
             x_img = self.transform(y_img)
-            x_img = x_img + torch.normal(mean=0, std=0.02, size=x_img.shape)
-            x_joint = y_joint + torch.normal(mean=0, std=self.stdev, size=y_joint.shape)
-        else:
-            x_img = y_img
-            x_joint = y_joint
+            x_img = x_img + torch.normal(mean=0, std=0.02, size=x_img.shape, device=self.device)
+            x_joint = y_joint + torch.normal(mean=0, std=self.stdev, size=y_joint.shape, device=self.device)
 
         return [[x_img, x_joint], [y_img, y_joint]]
 

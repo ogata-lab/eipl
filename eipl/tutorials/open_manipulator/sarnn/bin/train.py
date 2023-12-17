@@ -68,25 +68,23 @@ else:
 minmax = [args.vmin, args.vmax]
 grasp_data = SampleDownloader("om", "grasp_cube", img_format="CHW")
 images, joints = grasp_data.load_norm_data("train", vmin=args.vmin, vmax=args.vmax)
-train_dataset = MultimodalDataset(images, joints, stdev=stdev)
+train_dataset = MultimodalDataset(images, joints, device=device, stdev=stdev)
 train_loader = MultiEpochsDataLoader(
     train_dataset,
     batch_size=args.batch_size,
     shuffle=True,
-    num_workers=args.n_worker,
     drop_last=False,
-    pin_memory=True,
+    pin_memory=False
 )
 
 images, joints = grasp_data.load_norm_data("test", vmin=args.vmin, vmax=args.vmax)
-test_dataset = MultimodalDataset(images, joints, stdev=None)
+test_dataset = MultimodalDataset(images, joints, device=device, stdev=None)
 test_loader = MultiEpochsDataLoader(
     test_dataset,
     batch_size=args.batch_size,
     shuffle=True,
-    num_workers=args.n_worker,
     drop_last=False,
-    pin_memory=True,
+    pin_memory=False,
 )
 
 # define model
@@ -118,7 +116,7 @@ else:
 loss_weights = [args.img_loss, args.joint_loss, args.pt_loss]
 trainer = fullBPTTtrainer(model, optimizer, loss_weights=loss_weights, device=device)
 
-### training main
+# training main
 log_dir_path = set_logdir("./" + args.log_dir, args.tag)
 save_name = os.path.join(log_dir_path, "SARNN.pth")
 writer = SummaryWriter(log_dir=log_dir_path, flush_secs=30)
