@@ -141,7 +141,7 @@ class SampleDownloader(Downloader):
         """
         images_raw, joints_raw = self._load_data(data_type)
         images = normalization(
-            images_raw.astype(np.float32), (0.0, 255.0), (vmin, vmax)
+            images_raw.astype(np.float32), (0.0, 255.0), (0.0, 1.0)
         )
         joints = normalization(
             joints_raw.astype(np.float32), self.joint_bounds, (vmin, vmax)

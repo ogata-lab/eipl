@@ -23,8 +23,8 @@ class ImageDataset(Dataset):
         stdev (float, optional): Set the standard deviation for normal distribution to generate noise.
     """
 
-    def __init__(self, data, stdev=None):
-        """
+    def __init__(self, data, device="cpu", stdev=None):
+        """ 
         Reshapes and transforms the data.
 
         Arguments:
@@ -33,24 +33,20 @@ class ImageDataset(Dataset):
         """
 
         self.stdev = stdev
+        self.device = device
         _image_flatten = data.reshape(((-1,) + data.shape[-3:]))
-        self.image_flatten = torch.from_numpy(_image_flatten).float()
+        self.image_flatten = torch.Tensor(_image_flatten).to(self.device)
 
-        self.transform_affine = transforms.Compose(
-            [
+        self.transform_affine = transforms.Compose([
                 transforms.RandomAffine(degrees=(0, 0), translate=(0.15, 0.15)),
                 transforms.RandomAutocontrast(),
                 transforms.RandomHorizontalFlip(),
-                transforms.RandomVerticalFlip(),
-            ]
-        )
-        self.transform_noise = transforms.Compose(
-            [
-                transforms.ColorJitter(
-                    contrast=[0.6, 1.4], brightness=0.4, saturation=[0.6, 1.4], hue=0.04
-                )
-            ]
-        )
+                transforms.RandomVerticalFlip()
+        ]).to(self.device)
+        
+        self.transform_noise = transforms.Compose([
+                transforms.ColorJitter(contrast=[0.6, 1.4], brightness=0.4, saturation=[0.6, 1.4], hue=0.04)
+        ]).to(self.device)
 
     def __len__(self):
         """
@@ -76,9 +72,7 @@ class ImageDataset(Dataset):
 
         if self.stdev is not None:
             y_img = self.transform_affine(img)
-            x_img = self.transform_noise(y_img) + torch.normal(
-                mean=0, std=self.stdev, size=y_img.shape
-            )
+            x_img = self.transform_noise(y_img) + torch.normal(mean=0, std=self.stdev, size=y_img.shape, device=self.device)
         else:
             y_img = img
             x_img = img
@@ -96,7 +90,7 @@ class MultimodalDataset(Dataset):
         stdev (float, optional): Set the standard deviation for normal distribution to generate noise.
     """
 
-    def __init__(self, images, joints, device, stdev=None):
+    def __init__(self, images, joints, device="cpu", stdev=None):
         """
         The constructor of Multimodal Dataset class. Initializes the images, joints, and transformation.
 
@@ -105,8 +99,8 @@ class MultimodalDataset(Dataset):
             joints (numpy array): The joints data, expected to be a 3D array [data_num, seq_num, joint_dim].
             stdev (float, optional): The standard deviation for the normal distribution to generate noise. Defaults to 0.02.
         """
-        self.device = device
         self.stdev = stdev
+        self.device = device
         self.images = torch.Tensor(images).to(self.device)
         self.joints = torch.Tensor(joints).to(self.device)
         self.transform = transforms.ColorJitter(

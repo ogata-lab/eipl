@@ -18,13 +18,10 @@ from eipl.model import BasicLSTM, BasicMTRNN
 from eipl.utils import normalization
 from eipl.utils import EarlyStopping, check_args, set_logdir
 
-try:
-    from libs.fullBPTT import fullBPTTtrainer
-    from libs.dataloader import TimeSeriesDataSet
-except:
-    sys.path.append("./libs/")
-    from fullBPTT import fullBPTTtrainer
-    from dataloader import TimeSeriesDataSet
+# load own library
+sys.path.append("./libs/")
+from fullBPTT import fullBPTTtrainer
+from dataloader import TimeSeriesDataSet
 
 
 # argument parser

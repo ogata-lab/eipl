@@ -8,7 +8,6 @@
 import torch
 import torch.nn as nn
 from eipl.layer import SpatialSoftmax, InverseSpatialSoftmax
-from eipl.utils import get_activation_fn
 
 
 class SARNN(nn.Module):
@@ -37,15 +36,12 @@ class SARNN(nn.Module):
         temperature=1e-4,
         heatmap_size=0.1,
         kernel_size=3,
-        activation="lrelu",
         im_size=[128, 128],
     ):
         super(SARNN, self).__init__()
 
         self.k_dim = k_dim
-
-        if isinstance(activation, str):
-            activation = get_activation_fn(activation, inplace=True)
+        activation = nn.LeakyReLU(negative_slope=0.3, inplace=True)
 
         sub_im_size = [
             im_size[0] - 3 * (kernel_size - 1),
@@ -113,30 +109,22 @@ class SARNN(nn.Module):
             activation,
         )
 
-        self._reinitialize()
+        self.apply(self._weights_init)
 
-    def _reinitialize(self):
+    def _weights_init(self, m):
         """
         Tensorflow/Keras-like initialization
         """
-        for name, p in self.named_parameters():
-            if "rec" in name:
-                if "weight_ih" in name:
-                    nn.init.xavier_uniform_(p.data)
-                elif "weight_hh" in name:
-                    nn.init.orthogonal_(p.data)
-                elif "bias_ih" in name:
-                    p.data.fill_(0)
-                    # Set forget-gate bias to 1
-                    n = p.size(0)
-                    p.data[(n // 4) : (n // 2)].fill_(1)
-                elif "bias_hh" in name:
-                    p.data.fill_(0)
-            elif "decoder" in name or "encoder" in name:
-                if "weight" in name:
-                    nn.init.xavier_uniform_(p.data)
-                elif "bias" in name:
-                    p.data.fill_(0)
+        if isinstance(m, nn.LSTMCell):
+            nn.init.xavier_uniform_(m.weight_ih)
+            nn.init.orthogonal_(m.weight_hh)
+            nn.init.zeros_(m.bias_ih)
+            nn.init.zeros_(m.bias_hh)
+
+        if isinstance(m, nn.Conv2d) or isinstance(m, nn.ConvTranspose2d) or isinstance(m, nn.Linear):
+            nn.init.xavier_uniform_(m.weight)
+            nn.init.zeros_(m.bias)
+
 
     def forward(self, xi, xv, state=None):
         """

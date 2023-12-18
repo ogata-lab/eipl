@@ -7,7 +7,7 @@
 
 import torch
 import torch.nn as nn
-from eipl.utils import LossScheduler
+from eipl.utils import LossScheduler, tensor2numpy
 
 
 class fullBPTTtrainer:
@@ -48,10 +48,11 @@ class fullBPTTtrainer:
 
         total_loss = 0.0
         for n_batch, ((x_img, x_joint), (y_img, y_joint)) in enumerate(data):
-            x_img = x_img.to(self.device)
-            y_img = y_img.to(self.device)
-            x_joint = x_joint.to(self.device)
-            y_joint = y_joint.to(self.device)
+            if "cpu" in self.device:
+                x_img = x_img.to(self.device)
+                y_img = y_img.to(self.device)
+                x_joint = x_joint.to(self.device)
+                y_joint = y_joint.to(self.device)
 
             state = None
             yi_list, yv_list = [], []
@@ -76,8 +77,8 @@ class fullBPTTtrainer:
                 torch.stack(dec_pts_list[:-1]), torch.stack(enc_pts_list[1:])
             ) * self.scheduler(self.loss_weights[2])
             loss = img_loss + joint_loss + pt_loss
-            total_loss += loss.item()
-
+            total_loss += tensor2numpy(loss)
+                        
             if training:
                 self.optimizer.zero_grad(set_to_none=True)
                 loss.backward()

@@ -48,10 +48,11 @@ class fullBPTTtrainer:
 
         total_loss = 0.0
         for n_batch, ((x_img, x_joint), (y_img, y_joint)) in enumerate(data):
-            # x_img = x_img.to(self.device)
-            # y_img = y_img.to(self.device)
-            # x_joint = x_joint.to(self.device)
-            # y_joint = y_joint.to(self.device)
+            if "cpu" in self.device:
+                x_img = x_img.to(self.device)
+                y_img = y_img.to(self.device)
+                x_joint = x_joint.to(self.device)
+                y_joint = y_joint.to(self.device)
 
             state = None
             yi_list, yv_list = [], []

@@ -7,7 +7,7 @@ AUTHOR_EMAIL = 'it.hiroshi.o@gmail.com'
 URL = 'https://github.com/ogata-lab/eipl'
 LICENSE = 'AGPL v3'
 DOWNLOAD_URL = 'https://github.com/ogata-lab/eipl'
-VERSION = 1.0
+VERSION = 1.1
 PYTHON_REQUIRES = ">=3.8"
 
 """
