@@ -15,7 +15,6 @@ from eipl.utils import resize_img, calc_minmax, list_to_numpy, cos_interpolation
 
 
 def load_data(dir):
-    skip = 10
     joints = []
     images = []
     seq_length = []
@@ -26,10 +25,10 @@ def load_data(dir):
         print(filename)
         npz_data = np.load(filename)
 
-        images.append(resize_img(npz_data["images"][:-skip], (128, 128)))
+        images.append(resize_img(npz_data["images"], (128, 128)))
         finger_state = cos_interpolation(npz_data["finger_state"])
         _joints = np.concatenate(
-            (npz_data["joints"][:-skip], finger_state[:-skip]), axis=-1
+            (npz_data["joints"], finger_state), axis=-1
         )
         joints.append(_joints)
         seq_length.append(len(_joints))

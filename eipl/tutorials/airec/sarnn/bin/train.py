@@ -16,7 +16,7 @@ from collections import OrderedDict
 from torch.utils.tensorboard import SummaryWriter
 from eipl.model import SARNN
 from eipl.data import MultimodalDataset, SampleDownloader
-from eipl.utils import EarlyStopping, check_args, set_logdir
+from eipl.utils import EarlyStopping, check_args, set_logdir, resize_img
 
 # load own library
 sys.path.append("./libs/")
@@ -59,8 +59,10 @@ else:
 
 # load dataset
 minmax = [args.vmin, args.vmax]
-grasp_data = SampleDownloader("airec", "grasp_bottle", img_format="CHW")
+grasp_data = SampleDownloader("airec", "grasp_bottle", img_format="HWC")
 images, joints = grasp_data.load_norm_data("train", vmin=args.vmin, vmax=args.vmax)
+images = resize_img(images, (64,64))
+images = images.transpose(0,1,4,2,3)
 train_dataset = MultimodalDataset(images, joints, device=device, stdev=stdev)
 train_loader = torch.utils.data.DataLoader(
     train_dataset,
@@ -70,6 +72,8 @@ train_loader = torch.utils.data.DataLoader(
 )
 
 images, joints = grasp_data.load_norm_data("test", vmin=args.vmin, vmax=args.vmax)
+images = resize_img(images, (64,64))
+images = images.transpose(0,1,4,2,3)
 test_dataset = MultimodalDataset(images, joints, device=device, stdev=None)
 test_loader = torch.utils.data.DataLoader(
     test_dataset,

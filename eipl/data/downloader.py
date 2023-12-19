@@ -140,9 +140,7 @@ class SampleDownloader(Downloader):
             joints (numpy.array): The joints data, expected to be a 3D array [data_num, seq_num, joint_dim].
         """
         images_raw, joints_raw = self._load_data(data_type)
-        images = normalization(
-            images_raw.astype(np.float32), (0.0, 255.0), (0.0, 1.0)
-        )
+        images = normalization(images_raw.astype(np.float32), (0.0, 255.0), (0.0, 1.0))
         joints = normalization(
             joints_raw.astype(np.float32), self.joint_bounds, (vmin, vmax)
         )

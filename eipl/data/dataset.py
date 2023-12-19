@@ -6,7 +6,9 @@
 #
 
 import torch
+import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
+
 try:
     from torchvision.transforms import v2 as transforms
 except ImportError:
@@ -24,7 +26,7 @@ class ImageDataset(Dataset):
     """
 
     def __init__(self, data, device="cpu", stdev=None):
-        """ 
+        """
         Reshapes and transforms the data.
 
         Arguments:
@@ -37,16 +39,22 @@ class ImageDataset(Dataset):
         _image_flatten = data.reshape(((-1,) + data.shape[-3:]))
         self.image_flatten = torch.Tensor(_image_flatten).to(self.device)
 
-        self.transform_affine = transforms.Compose([
+        self.transform_affine = transforms.Compose(
+            [
                 transforms.RandomAffine(degrees=(0, 0), translate=(0.15, 0.15)),
                 transforms.RandomAutocontrast(),
                 transforms.RandomHorizontalFlip(),
-                transforms.RandomVerticalFlip()
-        ]).to(self.device)
-        
-        self.transform_noise = transforms.Compose([
-                transforms.ColorJitter(contrast=[0.6, 1.4], brightness=0.4, saturation=[0.6, 1.4], hue=0.04)
-        ]).to(self.device)
+                transforms.RandomVerticalFlip(),
+            ]
+        ).to(self.device)
+
+        self.transform_noise = transforms.Compose(
+            [
+                transforms.ColorJitter(
+                    contrast=[0.6, 1.4], brightness=0.4, saturation=[0.6, 1.4], hue=0.04
+                )
+            ]
+        ).to(self.device)
 
     def __len__(self):
         """
@@ -72,7 +80,9 @@ class ImageDataset(Dataset):
 
         if self.stdev is not None:
             y_img = self.transform_affine(img)
-            x_img = self.transform_noise(y_img) + torch.normal(mean=0, std=self.stdev, size=y_img.shape, device=self.device)
+            x_img = self.transform_noise(y_img) + torch.normal(
+                mean=0, std=self.stdev, size=y_img.shape, device=self.device
+            )
         else:
             y_img = img
             x_img = img
@@ -103,8 +113,12 @@ class MultimodalDataset(Dataset):
         self.device = device
         self.images = torch.Tensor(images).to(self.device)
         self.joints = torch.Tensor(joints).to(self.device)
-        self.transform = transforms.ColorJitter(
-            contrast=[0.6, 1.4], brightness=0.4, saturation=[0.6, 1.4], hue=0.04
+        self.transform = nn.Sequential(
+            transforms.RandomErasing(),
+            transforms.ColorJitter(brightness=0.4),
+            transforms.ColorJitter(contrast=[0.6, 1.4]),
+            transforms.ColorJitter(hue=[0.0, 0.04]),
+            transforms.ColorJitter(saturation=[0.6, 1.4]),
         ).to(self.device)
 
     def __len__(self):
@@ -130,8 +144,12 @@ class MultimodalDataset(Dataset):
 
         if self.stdev is not None:
             x_img = self.transform(y_img)
-            x_img = x_img + torch.normal(mean=0, std=0.02, size=x_img.shape, device=self.device)
-            x_joint = y_joint + torch.normal(mean=0, std=self.stdev, size=y_joint.shape, device=self.device)
+            x_img = x_img + torch.normal(
+                mean=0, std=0.02, size=x_img.shape, device=self.device
+            )
+            x_joint = y_joint + torch.normal(
+                mean=0, std=self.stdev, size=y_joint.shape, device=self.device
+            )
 
         return [[x_img, x_joint], [y_img, y_joint]]
 
@@ -139,7 +157,6 @@ class MultimodalDataset(Dataset):
 class MultiEpochsDataLoader(DataLoader):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._DataLoader__initialized = False
         self.batch_sampler = _RepeatSampler(self.batch_sampler)
         self._DataLoader__initialized = True
         self.iterator = super().__iter__()

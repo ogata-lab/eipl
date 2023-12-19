@@ -36,12 +36,12 @@ class SARNN(nn.Module):
         temperature=1e-4,
         heatmap_size=0.1,
         kernel_size=3,
-        im_size=[128, 128],
+        im_size=[64, 64],
     ):
         super(SARNN, self).__init__()
 
         self.k_dim = k_dim
-        activation = nn.LeakyReLU(negative_slope=0.3, inplace=True)
+        activation = nn.LeakyReLU(negative_slope=0.3)
 
         sub_im_size = [
             im_size[0] - 3 * (kernel_size - 1),
@@ -121,10 +121,13 @@ class SARNN(nn.Module):
             nn.init.zeros_(m.bias_ih)
             nn.init.zeros_(m.bias_hh)
 
-        if isinstance(m, nn.Conv2d) or isinstance(m, nn.ConvTranspose2d) or isinstance(m, nn.Linear):
+        if (
+            isinstance(m, nn.Conv2d)
+            or isinstance(m, nn.ConvTranspose2d)
+            or isinstance(m, nn.Linear)
+        ):
             nn.init.xavier_uniform_(m.weight)
             nn.init.zeros_(m.bias)
-
 
     def forward(self, xi, xv, state=None):
         """

@@ -59,15 +59,12 @@ for file in files:
 
         # Get the messages for each topic at the current time
         for topic in topics:
-            for topic_msg, msg, time in bag.read_messages(topic):
+            for topic_msg, msg, time in bag.read_messages(topic, start_time=current_time):
                 if time >= current_time:
                     if topic == "/torobo/joint_states":
                         joint_list.append(msg.position[7:14])
 
-                    if (
-                        topic
-                        == "/torobo/head/see3cam_left/camera/color/image_repub/compressed"
-                    ):
+                    if topic == "/torobo/head/see3cam_left/camera/color/image_repub/compressed":
                         np_arr = np.frombuffer(msg.data, np.uint8)
                         np_img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
                         np_img = np_img[::2, ::2]
@@ -91,8 +88,7 @@ for file in files:
 
         # Wait for the next interval
         current_time += rospy.Duration.from_sec(freq)
-        rospy.sleep(freq)
-
+        
     # Close the rosbag file
     bag.close()
 
