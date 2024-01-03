@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2023 Ogata Laboratory, Waseda University
+# Copyright (c) Since 2023 Ogata Laboratory, Waseda University
 #
 # Released under the AGPL license.
 # see https://www.gnu.org/licenses/agpl-3.0.txt
@@ -29,7 +29,7 @@ def load_data(index, data_dir, train):
             _joints = data["joints"]
             _gripper = data["gripper"][:, 0]
             _gripper = normalization(_gripper, (-1, 1), (0, 1))
-            _gripper = cos_interpolation(_gripper, 10)
+            _gripper = cos_interpolation(_gripper, 10, expand_dims=True)
             poses = np.concatenate((_poses, _gripper), axis=-1)
             joints = np.concatenate((_joints, _gripper), axis=-1)
 

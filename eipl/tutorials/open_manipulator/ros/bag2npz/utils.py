@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2023 Ogata Laboratory, Waseda University
+# Copyright (c) Since 2023 Ogata Laboratory, Waseda University
 #
 # Released under the AGPL license.
 # see https://www.gnu.org/licenses/agpl-3.0.txt
@@ -73,7 +73,12 @@ def list_to_numpy(data_list, max_N):
     return array
 
 
-def cos_interpolation(data, step=20):
+def cos_interpolation(data, step=20, expand_dims=False):
+    """
+    Args:
+        data (seq_length): time-series sensor data
+    """
+
     data = data.copy()
     points = np.diff(data)
 
@@ -88,4 +93,7 @@ def cos_interpolation(data, step=20):
         x_latent = (1 - np.cos(t * np.pi)) / 2
         data[i - step + 1 : i + step + 1] = x_latent
 
-    return np.expand_dims(data, axis=-1)
+    if expand_dims:
+        data = np.expand_dims(data, axis=-1)
+
+    return data

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2023 Ogata Laboratory, Waseda University
+# Copyright (c) Since 2023 Ogata Laboratory, Waseda University
 #
 # Released under the AGPL license.
 # see https://www.gnu.org/licenses/agpl-3.0.txt
@@ -44,7 +44,7 @@ idx = int(args.idx)
 minmax = [params["vmin"], params["vmax"]]
 grasp_data = SampleDownloader("airec", "grasp_bottle", img_format="HWC")
 _images, _joints = grasp_data.load_raw_data("test")
-_images = resize_img(_images, (64,64))
+_images = resize_img(_images, (64, 64))
 images = _images[idx]
 joints = _joints[idx]
 joint_bounds = grasp_data.joint_bounds

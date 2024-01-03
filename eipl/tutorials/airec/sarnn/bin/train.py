@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2023 Ogata Laboratory, Waseda University
+# Copyright (c) Since 2023 Ogata Laboratory, Waseda University
 #
 # Released under the AGPL license.
 # see https://www.gnu.org/licenses/agpl-3.0.txt
@@ -61,19 +61,16 @@ else:
 minmax = [args.vmin, args.vmax]
 grasp_data = SampleDownloader("airec", "grasp_bottle", img_format="HWC")
 images, joints = grasp_data.load_norm_data("train", vmin=args.vmin, vmax=args.vmax)
-images = resize_img(images, (64,64))
-images = images.transpose(0,1,4,2,3)
+images = resize_img(images, (64, 64))
+images = images.transpose(0, 1, 4, 2, 3)
 train_dataset = MultimodalDataset(images, joints, device=device, stdev=stdev)
 train_loader = torch.utils.data.DataLoader(
-    train_dataset,
-    batch_size=args.batch_size,
-    shuffle=True,
-    drop_last=False
+    train_dataset, batch_size=args.batch_size, shuffle=True, drop_last=False
 )
 
 images, joints = grasp_data.load_norm_data("test", vmin=args.vmin, vmax=args.vmax)
-images = resize_img(images, (64,64))
-images = images.transpose(0,1,4,2,3)
+images = resize_img(images, (64, 64))
+images = images.transpose(0, 1, 4, 2, 3)
 test_dataset = MultimodalDataset(images, joints, device=device, stdev=None)
 test_loader = torch.utils.data.DataLoader(
     test_dataset,
@@ -93,7 +90,7 @@ model = SARNN(
 
 # torch.compile makes PyTorch code run faster
 if args.compile:
-    torch.set_float32_matmul_precision('high')
+    torch.set_float32_matmul_precision("high")
     model = torch.compile(model)
 
 # set optimizer

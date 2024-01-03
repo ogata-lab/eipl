@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2023 Ogata Laboratory, Waseda University
+# Copyright (c) Since 2023 Ogata Laboratory, Waseda University
 #
 # Released under the AGPL license.
 # see https://www.gnu.org/licenses/agpl-3.0.txt
@@ -23,7 +23,9 @@ from fullBPTT import fullBPTTtrainer
 
 
 # argument parser
-parser = argparse.ArgumentParser(description="Learning convolutional and recurrent neural network")
+parser = argparse.ArgumentParser(
+    description="Learning convolutional and recurrent neural network"
+)
 parser.add_argument("--model", type=str, default="CNNRNN")
 parser.add_argument("--epoch", type=int, default=10000)
 parser.add_argument("--batch_size", type=int, default=5)

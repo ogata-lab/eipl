@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2023 Ogata Laboratory, Waseda University
+# Copyright (c) Since 2023 Ogata Laboratory, Waseda University
 #
 # Released under the AGPL license.
 # see https://www.gnu.org/licenses/agpl-3.0.txt
@@ -29,8 +29,16 @@ norm_joints = normalization(joints, joint_bounds, minmax)
 
 # print data information
 print("load test data, index number is {}".format(idx))
-print("Joint: shape={}, min={:.3g}, max={:.3g}".format(joints.shape, joints.min(), joints.max()))
-print("Norm joint: shape={}, min={:.3g}, max={:.3g}".format(norm_joints.shape, norm_joints.min(), norm_joints.max()))
+print(
+    "Joint: shape={}, min={:.3g}, max={:.3g}".format(
+        joints.shape, joints.min(), joints.max()
+    )
+)
+print(
+    "Norm joint: shape={}, min={:.3g}, max={:.3g}".format(
+        norm_joints.shape, norm_joints.min(), norm_joints.max()
+    )
+)
 
 # plot images and normalized joints
 fig, ax = plt.subplots(1, 3, figsize=(14, 5), dpi=60)

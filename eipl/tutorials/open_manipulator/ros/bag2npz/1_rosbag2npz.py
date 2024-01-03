@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2023 Ogata Laboratory, Waseda University
+# Copyright (c) Since 2023 Ogata Laboratory, Waseda University
 #
 # Released under the AGPL license.
 # see https://www.gnu.org/licenses/agpl-3.0.txt
@@ -50,7 +50,9 @@ for file in files:
     while current_time.to_sec() < end_time:
         # Get the messages for each topic at the current time
         for topic in topics:
-            for topic_msg, msg, time in bag.read_messages(topic, start_time=current_time):
+            for topic_msg, msg, time in bag.read_messages(
+                topic, start_time=current_time
+            ):
                 if time >= current_time:
                     if topic == "/camera/color/image_raw/compressed":
                         np_arr = np.frombuffer(msg.data, np.uint8)
@@ -64,7 +66,7 @@ for file in files:
 
         # Wait for the next interval
         current_time += rospy.Duration.from_sec(freq)
-    
+
     # Close the rosbag file
     bag.close()
 

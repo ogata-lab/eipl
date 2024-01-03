@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2023 Ogata Laboratory, Waseda University
+# Copyright (c) Since 2023 Ogata Laboratory, Waseda University
 #
 # Released under the AGPL license.
 # see https://www.gnu.org/licenses/agpl-3.0.txt
@@ -98,7 +98,7 @@ model = SARNN(
 
 # torch.compile makes PyTorch code run faster
 if args.compile:
-    torch.set_float32_matmul_precision('high')
+    torch.set_float32_matmul_precision("high")
     model = torch.compile(model)
 
 # set optimizer

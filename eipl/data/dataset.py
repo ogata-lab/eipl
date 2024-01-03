@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2023 Ogata Laboratory, Waseda University
+# Copyright (c) Since 2023 Ogata Laboratory, Waseda University
 #
 # Released under the AGPL license.
 # see https://www.gnu.org/licenses/agpl-3.0.txt
@@ -143,8 +143,7 @@ class MultimodalDataset(Dataset):
         y_joint = self.joints[idx]
 
         if self.stdev is not None:
-            x_img = self.transform(y_img)
-            x_img = x_img + torch.normal(
+            x_img = self.transform(y_img) + torch.normal(
                 mean=0, std=0.02, size=x_img.shape, device=self.device
             )
             x_joint = y_joint + torch.normal(
@@ -154,18 +153,26 @@ class MultimodalDataset(Dataset):
         return [[x_img, x_joint], [y_img, y_joint]]
 
 
-class MultiEpochsDataLoader(DataLoader):
+class MultiEpochsDataLoader(torch.utils.data.DataLoader):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.batch_sampler = _RepeatSampler(self.batch_sampler)
+        self._DataLoader__initialized = False
+        if self.batch_sampler is None:
+            self.sampler = _RepeatSampler(self.sampler)
+        else:
+            self.batch_sampler = _RepeatSampler(self.batch_sampler)
         self._DataLoader__initialized = True
         self.iterator = super().__iter__()
 
     def __len__(self):
-        return len(self.batch_sampler.sampler)
+        return (
+            len(self.sampler)
+            if self.batch_sampler is None
+            else len(self.batch_sampler.sampler)
+        )
 
     def __iter__(self):
-        for _ in range(len(self)):
+        for i in range(len(self)):
             yield next(self.iterator)
 
 

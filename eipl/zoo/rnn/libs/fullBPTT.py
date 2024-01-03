@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2023 Ogata Laboratory, Waseda University
+# Copyright (c) Since 2023 Ogata Laboratory, Waseda University
 #
 # Released under the AGPL license.
 # see https://www.gnu.org/licenses/agpl-3.0.txt
@@ -50,8 +50,8 @@ class fullBPTTtrainer:
 
             state = None
             y_list = []
-            T = x.shape[1]
-            for t in range(T - 1):
+            self.optimizer.zero_grad(set_to_none=True)
+            for t in range(x.shape[1] - 1):
                 y_hat, state = self.model(x[:, t], state)
                 y_list.append(y_hat)
 
@@ -60,7 +60,6 @@ class fullBPTTtrainer:
             total_loss += loss.item()
 
             if training:
-                self.optimizer.zero_grad(set_to_none=True)
                 loss.backward()
                 self.optimizer.step()
 

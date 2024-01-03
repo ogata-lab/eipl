@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2023 Ogata Laboratory, Waseda University
+# Copyright (c) Since 2023 Ogata Laboratory, Waseda University
 #
 # Released under the AGPL license.
 # see https://www.gnu.org/licenses/agpl-3.0.txt
@@ -117,7 +117,12 @@ def list_to_numpy(data_list, max_N):
     return array
 
 
-def cos_interpolation(data, step=20):
+def cos_interpolation(data, step=20, expand_dims=False):
+    """
+    Args:
+        data (seq_length): time-series sensor data
+    """
+
     data = data.copy()
     points = np.diff(data)
 
@@ -132,7 +137,10 @@ def cos_interpolation(data, step=20):
         x_latent = (1 - np.cos(t * np.pi)) / 2
         data[i - step + 1 : i + step + 1] = x_latent
 
-    return np.expand_dims(data, axis=-1)
+    if expand_dims:
+        data = np.expand_dims(data, axis=-1)
+
+    return data
 
 
 def get_lissajous(total_step, num_cycle, x_mag, y_mag, delta, dtype=np.float32):
@@ -238,3 +246,30 @@ def get_feature_map(im_size=64, channels=3, size=1000):
         feat_map.append(_feat_map)
 
     return np.array([feat_map], dtype=np.float32)
+
+
+def get_mean_minmax(data):
+    """
+    Args:
+        data (batch, time, dim): time-series sensor data
+    Return
+        mean (dim):
+        min (dim):
+        max (dim):
+    """
+    data_mean = np.mean(data, (0, 1))
+    # get max of data substracted mean
+    data_max = np.max(data - data_mean, axis=(0, 1))
+    data_min = np.min(data - data_mean, axis=(0, 1))
+
+    return data_mean, data_min, data_max
+
+
+def get_bounds(data_mean, data_min, data_max, clip=0.2, vmin=0.1, vmax=0.9):
+    margin = ((vmax - vmin) - clip) / 2
+    data_range = np.abs(data_max - data_min)
+    data_min[data_range < clip] -= margin
+    data_max[data_range < clip] += margin
+    bounds = np.vstack([data_mean, data_min, data_max])
+
+    return bounds

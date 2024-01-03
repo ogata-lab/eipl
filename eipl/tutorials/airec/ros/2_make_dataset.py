@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2023 Ogata Laboratory, Waseda University
+# Copyright (c) Since 2023 Ogata Laboratory, Waseda University
 #
 # Released under the AGPL license.
 # see https://www.gnu.org/licenses/agpl-3.0.txt
@@ -26,10 +26,8 @@ def load_data(dir):
         npz_data = np.load(filename)
 
         images.append(resize_img(npz_data["images"], (128, 128)))
-        finger_state = cos_interpolation(npz_data["finger_state"])
-        _joints = np.concatenate(
-            (npz_data["joints"], finger_state), axis=-1
-        )
+        finger_state = cos_interpolation(npz_data["finger_state"], expand_dims=True)
+        _joints = np.concatenate((npz_data["joints"], finger_state), axis=-1)
         joints.append(_joints)
         seq_length.append(len(_joints))
 

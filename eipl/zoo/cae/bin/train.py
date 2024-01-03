@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2023 Ogata Laboratory, Waseda University
+# Copyright (c) Since 2023 Ogata Laboratory, Waseda University
 #
 # Released under the AGPL license.
 # see https://www.gnu.org/licenses/agpl-3.0.txt
@@ -57,19 +57,13 @@ grasp_data = SampleDownloader("airec", "grasp_bottle", img_format="CHW")
 images, _ = grasp_data.load_norm_data("train", vmin=args.vmin, vmax=args.vmax)
 train_dataset = ImageDataset(images, device=device, stdev=stdev)
 train_loader = torch.utils.data.DataLoader(
-    train_dataset,
-    batch_size=args.batch_size,
-    shuffle=True,
-    drop_last=False
+    train_dataset, batch_size=args.batch_size, shuffle=True, drop_last=False
 )
 
 images, _ = grasp_data.load_norm_data("test", vmin=args.vmin, vmax=args.vmax)
 test_dataset = ImageDataset(images, device=device, stdev=None)
 test_loader = torch.utils.data.DataLoader(
-    test_dataset,
-    batch_size=args.batch_size,
-    shuffle=True,
-    drop_last=False
+    test_dataset, batch_size=args.batch_size, shuffle=True, drop_last=False
 )
 
 
