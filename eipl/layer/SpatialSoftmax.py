@@ -13,11 +13,11 @@ from eipl.utils import tensor2numpy, plt_img, get_feature_map
 
 
 def create_position_encoding(
-    width: int, height: int, normalized=True, data_format="channels_first"
+    width: int, height: int, indexing="xy", normalized=True, data_format="channels_first"
 ):
     if normalized:
         pos_x, pos_y = np.meshgrid(
-            np.linspace(0.0, 1.0, height), np.linspace(0.0, 1.0, width), indexing="xy"
+            np.linspace(0.0, 1.0, height), np.linspace(0.0, 1.0, width), indexing=indexing
         )
     else:
         pos_x, pos_y = np.meshgrid(
@@ -47,13 +47,13 @@ class SpatialSoftmax(nn.Module):
     https://ieeexplore.ieee.org/abstract/document/7487173
     """
 
-    def __init__(self, width: int, height: int, temperature=1e-4, normalized=True):
+    def __init__(self, width: int, height: int, temperature=1e-4, indexing="xy", normalized=True):
         super(SpatialSoftmax, self).__init__()
         self.width = width
         self.height = height
         self.temperature = temperature
 
-        _, pos_x, pos_y = create_position_encoding(width, height, normalized=normalized)
+        _, pos_x, pos_y = create_position_encoding(width, height, indexing=indexing, normalized=normalized)
         self.register_buffer("pos_x", pos_x)
         self.register_buffer("pos_y", pos_y)
 
@@ -86,7 +86,7 @@ class InverseSpatialSoftmax(nn.Module):
     https://arxiv.org/abs/2103.01598
     """
 
-    def __init__(self, width: int, height: int, heatmap_size=0.1, normalized=True):
+    def __init__(self, width: int, height: int, heatmap_size=0.1, indexing="xy", normalized=True):
         super(InverseSpatialSoftmax, self).__init__()
 
         self.width = width
@@ -94,7 +94,7 @@ class InverseSpatialSoftmax(nn.Module):
         self.normalized = normalized
         self.heatmap_size = heatmap_size
 
-        pos_xy, _, _ = create_position_encoding(width, height, normalized=normalized)
+        pos_xy, _, _ = create_position_encoding(width, height, indexing=indexing, normalized=normalized)
         self.register_buffer("pos_xy", pos_xy)
 
     def forward(self, keys):

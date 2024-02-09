@@ -1,13 +1,13 @@
 from setuptools import setup, find_packages
 
 DESCRIPTION = "EIPL: Embodied Intelligence with Deep Predictive Learning"
-NAME = 'eipl'
-AUTHOR = 'Hiroshi Ito'
-AUTHOR_EMAIL = 'it.hiroshi.o@gmail.com'
-URL = 'https://github.com/ogata-lab/eipl'
-LICENSE = 'AGPL v3'
-DOWNLOAD_URL = 'https://github.com/ogata-lab/eipl'
-VERSION = 1.1.1
+NAME = "eipl"
+AUTHOR = "Hiroshi Ito"
+AUTHOR_EMAIL = "it.hiroshi.o@gmail.com"
+URL = "https://github.com/ogata-lab/eipl"
+LICENSE = "AGPL v3"
+DOWNLOAD_URL = "https://github.com/ogata-lab/eipl"
+VERSION = "1.1.1"
 PYTHON_REQUIRES = ">=3.8"
 
 """
@@ -30,18 +30,19 @@ long_description = readme + '\n\n' + contacts
 """
 
 
-setup(name=NAME,
-     author=AUTHOR,
-     author_email=AUTHOR_EMAIL,
-     maintainer=AUTHOR,
-     maintainer_email=AUTHOR_EMAIL,
-     description=DESCRIPTION,
-     #long_description=long_description,
-     license=LICENSE,
-     url=URL,
-     version=VERSION,
-     download_url=DOWNLOAD_URL,
-     #python_requires=PYTHON_REQUIRES,
-     #install_requires=INSTALL_REQUIRES,
-     packages=find_packages()
+setup(
+    name=NAME,
+    author=AUTHOR,
+    author_email=AUTHOR_EMAIL,
+    maintainer=AUTHOR,
+    maintainer_email=AUTHOR_EMAIL,
+    description=DESCRIPTION,
+    # long_description=long_description,
+    license=LICENSE,
+    url=URL,
+    version=VERSION,
+    download_url=DOWNLOAD_URL,
+    # python_requires=PYTHON_REQUIRES,
+    # install_requires=INSTALL_REQUIRES,
+    packages=find_packages(),
 )
