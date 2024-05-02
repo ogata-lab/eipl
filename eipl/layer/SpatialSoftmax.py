@@ -1,5 +1,5 @@
 #
-# Copyright (c) Since 2023 Ogata Laboratory, Waseda University
+# Copyright (c) 2023 Ogata Laboratory, Waseda University
 #
 # Released under the AGPL license.
 # see https://www.gnu.org/licenses/agpl-3.0.txt
@@ -12,13 +12,9 @@ import matplotlib.pyplot as plt
 from eipl.utils import tensor2numpy, plt_img, get_feature_map
 
 
-def create_position_encoding(
-    width: int, height: int, indexing="xy", normalized=True, data_format="channels_first"
-):
+def create_position_encoding(width: int, height: int, normalized=True, data_format="channels_first"):
     if normalized:
-        pos_x, pos_y = np.meshgrid(
-            np.linspace(0.0, 1.0, height), np.linspace(0.0, 1.0, width), indexing=indexing
-        )
+        pos_x, pos_y = np.meshgrid(np.linspace(0.0, 1.0, height), np.linspace(0.0, 1.0, width), indexing="xy")
     else:
         pos_x, pos_y = np.meshgrid(
             np.linspace(0, height - 1, height),
@@ -47,13 +43,13 @@ class SpatialSoftmax(nn.Module):
     https://ieeexplore.ieee.org/abstract/document/7487173
     """
 
-    def __init__(self, width: int, height: int, temperature=1e-4, indexing="xy", normalized=True):
+    def __init__(self, width: int, height: int, temperature=1e-4, normalized=True):
         super(SpatialSoftmax, self).__init__()
         self.width = width
         self.height = height
         self.temperature = temperature
 
-        _, pos_x, pos_y = create_position_encoding(width, height, indexing=indexing, normalized=normalized)
+        _, pos_x, pos_y = create_position_encoding(width, height, normalized=normalized)
         self.register_buffer("pos_x", pos_x)
         self.register_buffer("pos_y", pos_y)
 
@@ -86,20 +82,23 @@ class InverseSpatialSoftmax(nn.Module):
     https://arxiv.org/abs/2103.01598
     """
 
-    def __init__(self, width: int, height: int, heatmap_size=0.1, indexing="xy", normalized=True):
+    def __init__(self, width: int, height: int, heatmap_size=0.1, normalized=True, convex=True):
         super(InverseSpatialSoftmax, self).__init__()
 
         self.width = width
         self.height = height
         self.normalized = normalized
         self.heatmap_size = heatmap_size
+        self.convex = convex
 
-        pos_xy, _, _ = create_position_encoding(width, height, indexing=indexing, normalized=normalized)
+        pos_xy, _, _ = create_position_encoding(width, height, normalized=normalized)
         self.register_buffer("pos_xy", pos_xy)
 
     def forward(self, keys):
-        squared_distances = torch.sum(
-            torch.pow(self.pos_xy[None, None] - keys[:, :, :, None, None], 2.0), axis=2
-        )
+        squared_distances = torch.sum(torch.pow(self.pos_xy[None, None] - keys[:, :, :, None, None], 2.0), axis=2)
         heatmap = torch.exp(-squared_distances / self.heatmap_size)
+
+        if self.convex:
+            heatmap = torch.abs(1.0 - heatmap)
+
         return heatmap
