@@ -10,4 +10,4 @@ tqdm
 scikit-learn
 torch
 torchvision
-torchaudio
+onnx
