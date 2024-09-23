@@ -1,8 +1,6 @@
 #
 # Copyright (c) Since 2023 Ogata Laboratory, Waseda University
-#
-# Released under the AGPL license.
-# see https://www.gnu.org/licenses/agpl-3.0.txt
+# Released under the MIT License.
 #
 
 import os

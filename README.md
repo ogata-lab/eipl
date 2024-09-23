@@ -34,4 +34,4 @@ pip install -e .
 
 ## LICENSE
 
-AGPL-3.0
+MIT License
