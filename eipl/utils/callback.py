@@ -21,7 +21,7 @@ class EarlyStopping:
         self.best_score = None
         self.save_ckpt = False
         self.stop_flag = False
-        self.val_loss_min = np.Inf
+        self.val_loss_min = np.inf
 
     def __call__(self, val_loss):
         if np.isnan(val_loss) or np.isinf(val_loss):
