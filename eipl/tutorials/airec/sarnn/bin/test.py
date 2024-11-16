@@ -30,7 +30,7 @@ assert args.filename or args.pretrained, "Please set filename or pretrained"
 if args.pretrained:
     WeightDownloader("airec", "grasp_bottle")
     args.filename = os.path.join(
-        os.path.expanduser("~"), ".eipl/airec/grasp_bottle/weights/SARNN/model.pth"
+        os.path.expanduser("~"), ".cache/eipl/airec/grasp_bottle/weights/SARNN/model.pth"
     )
 
 # restore parameters

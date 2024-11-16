@@ -15,7 +15,7 @@ class Downloader:
     def __init__(self, robot, task):
         self.robot = robot
         self.task = task
-        self.root_dir = os.path.join(os.path.expanduser("~"), ".eipl/", robot)
+        self.root_dir = os.path.join(os.path.expanduser("~"), ".cache/eipl/", robot)
 
     def _download_tar_files(self, url):
         for _url in url:
