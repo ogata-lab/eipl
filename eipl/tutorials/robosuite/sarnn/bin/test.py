@@ -3,14 +3,16 @@
 # Released under the MIT License.
 #
 
-import os
-import torch
 import argparse
-import numpy as np
-import matplotlib.pylab as plt
+import os
+
 import matplotlib.animation as anim
-from eipl.utils import restore_args, tensor2numpy, deprocess_img, normalization
+import matplotlib.pylab as plt
+import numpy as np
+import torch
+
 from eipl.model import SARNN
+from eipl.utils import deprocess_img, normalization, restore_args, tensor2numpy
 
 # argument parser
 parser = argparse.ArgumentParser()
@@ -89,7 +91,7 @@ ect_pts = np.array(ect_pts_list)
 dec_pts = np.array(dec_pts_list)
 ect_pts = ect_pts.reshape(-1, params["k_dim"], 2) * im_size
 dec_pts = dec_pts.reshape(-1, params["k_dim"], 2) * im_size
-enc_pts = np.clip(ect_pts, 0, im_size)
+ect_pts = np.clip(ect_pts, 0, im_size)
 dec_pts = np.clip(dec_pts, 0, im_size)
 
 
