@@ -3,17 +3,24 @@
 # Released under the MIT License.
 #
 
-import os
-import torch
 import argparse
-import numpy as np
-import matplotlib.pylab as plt
+import os
+from pathlib import Path
+
 import matplotlib.animation as anim
+import matplotlib.pyplot as plt
+import numpy as np
+import torch
+
 from eipl.data import SampleDownloader, WeightDownloader
 from eipl.model import SARNN
-from eipl.utils import normalization
-from eipl.utils import restore_args, tensor2numpy, deprocess_img, resize_img
-
+from eipl.utils import (
+    deprocess_img,
+    normalization,
+    resize_img,
+    restore_args,
+    tensor2numpy,
+)
 
 # argument parser
 parser = argparse.ArgumentParser()
@@ -21,6 +28,7 @@ parser.add_argument("--filename", type=str, default=None)
 parser.add_argument("--idx", type=str, default="0")
 parser.add_argument("--input_param", type=float, default=1.0)
 parser.add_argument("--pretrained", action="store_true")
+parser.add_argument("--close-joint", action="store_true")
 args = parser.parse_args()
 
 # check args
@@ -30,7 +38,8 @@ assert args.filename or args.pretrained, "Please set filename or pretrained"
 if args.pretrained:
     WeightDownloader("airec", "grasp_bottle")
     args.filename = os.path.join(
-        os.path.expanduser("~"), ".cache/eipl/airec/grasp_bottle/weights/SARNN/model.pth"
+        os.path.expanduser("~"),
+        ".cache/eipl/airec/grasp_bottle/weights/SARNN/model.pth",
     )
 
 # restore parameters
@@ -89,6 +98,9 @@ for loop_ct in range(nloop):
         img_t = args.input_param * img_t + (1.0 - args.input_param) * y_image
         joint_t = args.input_param * joint_t + (1.0 - args.input_param) * y_joint
 
+    if args.close_joint and loop_ct > 0:
+        joint_t = y_joint
+
     # predict rnn
     y_image, y_joint, ect_pts, dec_pts, state = model(img_t, joint_t, state)
 
@@ -99,7 +111,7 @@ for loop_ct in range(nloop):
     pred_joint = tensor2numpy(y_joint[0])
     pred_joint = normalization(pred_joint, minmax, joint_bounds)
 
-    # send pred_joint to robot
+    # TODO: send pred_joint to robot
     # send_command(pred_joint)
     # pub.publish(pred_joint)
 
@@ -157,9 +169,12 @@ def anim_update(i):
     ax[2].set_title("Joint angles")
 
 
-ani = anim.FuncAnimation(fig, anim_update, interval=int(np.ceil(T / 10)), frames=T)
-ani.save("./output/SARNN_{}_{}_{}.gif".format(params["tag"], idx, args.input_param))
-
-# If an error occurs in generating the gif animation or mp4, change the writer (imagemagick/ffmpeg).
-# ani.save("./output/PCA_SARNN_{}.gif".format(params["tag"]), writer="imagemagick")
-# ani.save("./output/PCA_SARNN_{}.mp4".format(params["tag"]), writer="ffmpeg")
+ani = anim.FuncAnimation(fig, anim_update, frames=T, interval=100)
+animation_path = (
+    Path("output")
+    / params["tag"]
+    / f"SARNN_{idx}{'_close' if args.close_joint else ''}.mp4"
+)
+if animation_path.parent.exists():
+    animation_path.parent.mkdir(parents=True)
+ani.save(animation_path, writer="ffmpeg", fps=10)

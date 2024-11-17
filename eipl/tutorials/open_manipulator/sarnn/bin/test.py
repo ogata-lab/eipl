@@ -3,23 +3,25 @@
 # Released under the MIT License.
 #
 
-import os
-import glob
-import sys
-import torch
 import argparse
-import numpy as np
-import matplotlib.pylab as plt
+import os
+from pathlib import Path
+
 import matplotlib.animation as anim
+import matplotlib.pyplot as plt
+import numpy as np
+import torch
+
 from eipl.data import SampleDownloader, WeightDownloader
-from eipl.utils import restore_args, tensor2numpy, deprocess_img, normalization
 from eipl.model import SARNN
+from eipl.utils import deprocess_img, normalization, restore_args, tensor2numpy
 
 # argument parser
 parser = argparse.ArgumentParser()
 parser.add_argument("--filename", type=str, default=None)
 parser.add_argument("--idx", type=int, default=0)
 parser.add_argument("--pretrained", action="store_true")
+parser.add_argument("--close-joint", action="store_true")
 args = parser.parse_args()
 
 # check args
@@ -84,6 +86,9 @@ for loop_ct in range(nloop):
     img_t = normalization(img_t, (0, 255), minmax)
     joint_t = torch.Tensor(np.expand_dims(joints[loop_ct], 0))
     joint_t = normalization(joint_t, joint_bounds, minmax)
+
+    if args.close_joint and loop_ct > 0:
+        joint_t = y_joint
 
     # predict rnn
     y_image, y_joint, ect_pts, dec_pts, state = model(img_t, joint_t, state)
@@ -150,8 +155,13 @@ def anim_update(i):
     ax[2].set_title("Joint angles")
 
 
-ani = anim.FuncAnimation(fig, anim_update, interval=int(np.ceil(T / 10)), frames=T)
-ani.save("./output/SARNN_{}_{}.gif".format(params["tag"], idx))
-
-# If an error occurs in generating the gif animation, change the writer (imagemagick/ffmpeg).
-# ani.save("./output/SARNN_{}_{}_{}.gif".format(params["tag"], idx, args.input_param), writer="ffmpeg")
+# save in 10fps
+ani = anim.FuncAnimation(fig, anim_update, frames=T, interval=100)
+animation_path = (
+    Path("output")
+    / params["tag"]
+    / f"SARNN_{idx}{'_close' if args.close_joint else ''}.mp4"
+)
+if not animation_path.parent.exists():
+    animation_path.parent.mkdir(parents=True)
+ani.save(animation_path, writer="ffmpeg", fps=10)
