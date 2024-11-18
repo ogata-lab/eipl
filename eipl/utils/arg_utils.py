@@ -7,7 +7,6 @@
 
 import json
 import datetime
-import subprocess
 from .print_func import *
 from .path_utils import *
 
@@ -57,15 +56,6 @@ def get_config(args, tag, default=None):
 
         print_info("set {} <-- {} (default)".format(tag, default))
         return default
-    
-def get_commit_hash():
-    """Get git commit hash"""
-    try:
-        cmd = "git rev-parse HEAD"
-        commit_hash = subprocess.check_output(cmd.split()).strip().decode("utf-8")
-    except subprocess.CalledProcessError:
-        commit_hash = "None"
-    return commit_hash
 
 
 def check_args(args):
@@ -78,11 +68,6 @@ def check_args(args):
 
     # make log directory
     check_path(os.path.join(args.log_dir, args.tag), mkdir=True)
-
-    # git commit hash
-    commit_hash = get_commit_hash()
-    print_info("Commit hash: %s" % commit_hash)
-    args.commit_hash = commit_hash
 
     # saves arguments into json file
     save_args(args, os.path.join(args.log_dir, args.tag, "args.json"))
