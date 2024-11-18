@@ -8,7 +8,7 @@ import shutil
 from eipl.data import WeightDownloader
 
 # remove old data
-root_dir = os.path.join(os.path.expanduser("~"), ".eipl/")
+root_dir = os.path.join(os.path.expanduser("~"), ".cache/eipl/")
 shutil.rmtree(root_dir)
 
 WeightDownloader("airec", "grasp_bottle")

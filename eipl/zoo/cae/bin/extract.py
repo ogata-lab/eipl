@@ -52,7 +52,7 @@ for data_type in ["train", "test"]:
     images = torch.tensor(images)
     joint_bounds = np.load(
         os.path.join(
-            os.path.expanduser("~"), ".eipl/airec/grasp_bottle/joint_bounds.npy"
+            os.path.expanduser("~"), ".cache/eipl/airec/grasp_bottle/joint_bounds.npy"
         )
     )
 
