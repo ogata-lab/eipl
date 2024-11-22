@@ -4,8 +4,6 @@
 #
 
 import os
-import glob
-import sys
 import torch
 import argparse
 import numpy as np
@@ -74,7 +72,7 @@ model.eval()
 # Inference
 img_size = 64
 image_list, joint_list = [], []
-ect_pts_list, dec_pts_list = [], []
+enc_pts_list, dec_pts_list = [], []
 state = None
 nloop = len(images)
 for loop_ct in range(nloop):
@@ -86,7 +84,7 @@ for loop_ct in range(nloop):
     joint_t = normalization(joint_t, joint_bounds, minmax)
 
     # predict rnn
-    y_image, y_joint, ect_pts, dec_pts, state = model(img_t, joint_t, state)
+    y_image, y_joint, enc_pts, dec_pts, state = model(img_t, joint_t, state)
 
     # denormalization
     pred_image = tensor2numpy(y_image[0])
@@ -98,7 +96,7 @@ for loop_ct in range(nloop):
     # append data
     image_list.append(pred_image)
     joint_list.append(pred_joint)
-    ect_pts_list.append(tensor2numpy(ect_pts[0]))
+    enc_pts_list.append(tensor2numpy(enc_pts[0]))
     dec_pts_list.append(tensor2numpy(dec_pts[0]))
 
     print("loop_ct:{}, joint:{}".format(loop_ct, pred_joint))
@@ -107,11 +105,11 @@ pred_image = np.array(image_list)
 pred_joint = np.array(joint_list)
 
 # split key points
-ect_pts = np.array(ect_pts_list)
+enc_pts = np.array(enc_pts_list)
 dec_pts = np.array(dec_pts_list)
-ect_pts = ect_pts.reshape(-1, params["k_dim"], 2) * img_size
+enc_pts = enc_pts.reshape(-1, params["k_dim"], 2) * img_size
 dec_pts = dec_pts.reshape(-1, params["k_dim"], 2) * img_size
-enc_pts = np.clip(ect_pts, 0, img_size)
+enc_pts = np.clip(enc_pts, 0, img_size)
 dec_pts = np.clip(dec_pts, 0, img_size)
 
 
@@ -127,7 +125,7 @@ def anim_update(i):
     # plot camera image
     ax[0].imshow(images[i, :, :, ::-1])
     for j in range(params["k_dim"]):
-        ax[0].plot(ect_pts[i, j, 0], ect_pts[i, j, 1], "bo", markersize=6)  # encoder
+        ax[0].plot(enc_pts[i, j, 0], enc_pts[i, j, 1], "bo", markersize=6)  # encoder
         ax[0].plot(
             dec_pts[i, j, 0], dec_pts[i, j, 1], "rx", markersize=6, markeredgewidth=2
         )  # decoder
