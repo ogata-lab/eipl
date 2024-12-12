@@ -96,7 +96,7 @@ class InverseSpatialSoftmax(nn.Module):
         squared_distances = torch.sum(torch.pow(self.pos_xy[None, None] - keys[:, :, :, None, None], 2.0), axis=2)
         heatmap = torch.exp(-squared_distances / self.heatmap_size)
 
-        if self.convex:
+        if not self.convex:
             heatmap = torch.abs(1.0 - heatmap)
 
         return heatmap
